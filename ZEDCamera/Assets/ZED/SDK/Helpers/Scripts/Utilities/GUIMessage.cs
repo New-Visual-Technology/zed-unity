@@ -1,7 +1,7 @@
 ﻿//======= Copyright (c) Stereolabs Corporation, All rights reserved. ===============
 
 using UnityEngine;
-using UnityEngine.VR;
+using UnityEngine.XR;
 
 /// <summary>
 /// Controls the message displayed as the zed is initialized, and if it becomes disconnected. 
@@ -340,6 +340,18 @@ public class GUIMessage : MonoBehaviour
                 {
                     textleft.text = "Invalid SVO File/Path";
                     textright.text = "Invalid SVO File/Path";
+                }
+            }
+            else if (e == sl.ERROR_CODE.INVALID_CALIBRATION_FILE && oldInitStatus == sl.ERROR_CODE.INVALID_CALIBRATION_FILE)
+            {
+                if (textmono)
+                {
+                    textmono.text = "Invalid Calibration file";
+                }
+                else if (textleft)
+                {
+                    textleft.text = "Invalid Calibration file";
+                    textright.text = "Invalid Calibration file";
                 }
             }
             else if (e == oldInitStatus)

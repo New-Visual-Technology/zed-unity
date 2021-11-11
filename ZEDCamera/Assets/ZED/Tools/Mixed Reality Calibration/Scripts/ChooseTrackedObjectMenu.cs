@@ -26,7 +26,6 @@ public class ChooseTrackedObjectMenu : MonoBehaviour
 
     public bool updateTrackedObjects = true;
     public float updateIntervalSeconds = 1f;
-    private float updateTimer = 0f;
 
     /// <summary>
     /// How wide the grid of tracked object buttons can be. Objects are stacked upwards. 
@@ -267,14 +266,18 @@ public class ChooseTrackedObjectMenu : MonoBehaviour
         }*/
 
         //Make a left controller button. 
-        ChooseTrackedObjectButton leftButton;
-        CreateTrackedObjectPrefab(TOUCH_INDEX_LEFT, out leftButton);
-        if (leftButton != null) allButtons.Add(leftButton);
+        CreateTrackedObjectPrefab(TOUCH_INDEX_LEFT, out ChooseTrackedObjectButton leftButton);
+        if (button != null)
+        {
+            allButtons.Add(button);
+        }
+        
+        CreateTrackedObjectPrefab(TOUCH_INDEX_LEFT, out ChooseTrackedObjectButton leftButton);
+        if (button != null)
+        {
+            allButtons.Add(button);
+        }
 
-        //Make a right controller button. 
-        ChooseTrackedObjectButton rightButton;
-        CreateTrackedObjectPrefab(TOUCH_INDEX_RIGHT, out rightButton);
-        if (rightButton != null) allButtons.Add(rightButton);
 #endif
         ArrangeIntoGrid(allButtons, objectWidth, objectHeight, maxColumns);
     }

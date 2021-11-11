@@ -78,8 +78,7 @@ public class SetControllerSkin : MonoBehaviour
                 //renderModel.SetDeviceIndex((int)controllerTracker.index);
                 SetRenderModelIndex((int)controllerTracker.index);
             }
-#endif
-#if ZED_OCULUS
+#elif ZED_OCULUS
             if(controllerTracker.deviceToTrack == ZEDControllerTracker.Devices.LeftController)
             {
                 SetRenderModelIndex(ChooseTrackedObjectMenu.TOUCH_INDEX_LEFT);
