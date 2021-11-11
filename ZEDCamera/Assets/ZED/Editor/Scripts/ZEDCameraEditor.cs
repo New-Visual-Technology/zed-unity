@@ -1,4 +1,6 @@
 ﻿//======= Copyright (c) Stereolabs Corporation, All rights reserved. ===============
+
+using Simteam.Events;
 using UnityEngine;
 using UnityEditor;
 
@@ -55,6 +57,7 @@ public class ZEDCameraEditor : Editor
     private SerializedProperty depthOcclusionProperty;
     private SerializedProperty arpostProcessingPropery;
     private SerializedProperty camBrightnessProperty;
+    private SerializedProperty camBrightnessObjectProperty;
 
     //Recording Prop
     private SerializedProperty svoOutputFileNameProperty;
@@ -240,9 +243,11 @@ public class ZEDCameraEditor : Editor
 
 
         ///Rendering Serialized Properties
-        depthOcclusionProperty = serializedObject.FindProperty("depthOcclusion");
-        arpostProcessingPropery = serializedObject.FindProperty("postProcessing");
-        camBrightnessProperty = serializedObject.FindProperty("m_cameraBrightness");
+        depthOcclusionProperty      = serializedObject.FindProperty("depthOcclusion");
+        arpostProcessingPropery     = serializedObject.FindProperty("postProcessing");
+        camBrightnessProperty       = serializedObject.FindProperty("m_cameraBrightness");
+        camBrightnessObjectProperty = serializedObject.FindProperty("m_cameraBrightnessObject");
+
 
         ///Spatial Mapping Serialized Properties
         range = serializedObject.FindProperty("mappingRangePreset");
@@ -564,6 +569,10 @@ public class ZEDCameraEditor : Editor
         GUIContent camBrightnessPropertyLabel = new GUIContent("Camera Brightness", "Brightness of the final real-world image. Default is 100. Lower to darken the environment in a realistic-looking way. " +
         "This is a rendering setting that doesn't affect the raw input from the camera.");
         camBrightnessProperty.intValue = EditorGUILayout.IntSlider(camBrightnessPropertyLabel, camBrightnessProperty.intValue, 0, 100);
+
+        GUIContent camBrightnessObjectPropertyLabel = new GUIContent("Camera Brightness Object", "Object which holds the current camera brightness value");
+        camBrightnessObjectProperty.objectReferenceValue = EditorGUILayout.ObjectField(camBrightnessObjectPropertyLabel,camBrightnessObjectProperty.objectReferenceValue, typeof(IntObject),true);
+        
         EditorGUI.indentLevel--;
 
         ///////////////////////////////////////////////////////////////
@@ -1373,8 +1382,6 @@ public class ZEDCameraEditor : Editor
             GUI.enabled = true;
         }
         serializedObject.ApplyModifiedProperties();
-
-
 
         ///////////////////////////////////////////////////////////////
         ///  Status layout //////////////////////////////////////////

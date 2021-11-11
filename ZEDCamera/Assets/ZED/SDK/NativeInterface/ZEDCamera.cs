@@ -810,14 +810,14 @@ namespace sl
                 {
                     Debug.Log("Error : " + res);
                     //0 = installed SDK is compatible with plugin. 1 otherwise.
-                    Debug.LogError(ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.SDK_DEPENDENCIES_ISSUE));
+                    Debug.LogWarning(ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.SDK_DEPENDENCIES_ISSUE));
                     return false;
                 }
             }
             catch (DllNotFoundException) //In case could not resolve the dll/.so
             {
                 Debug.Log("DllNotFoundException");
-                Debug.LogError(ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.SDK_DEPENDENCIES_ISSUE));
+                Debug.LogWarning(ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.SDK_DEPENDENCIES_ISSUE));
                 return false;
             }
 

@@ -5,7 +5,9 @@ using UnityEngine.XR;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-
+using FVW.Modules.Tracking;
+using Simteam.Events;
+using sl;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -20,7 +22,7 @@ using UnityEditor;
 /// ZEDManager is attached to the root objects in the ZED_Rig_Mono and ZED_Rig_Stereo prefabs. 
 /// If using ZED_Rig_Stereo, it will set isStereoRig to true, which triggers several behaviors unique to stereo pass-through AR. 
 /// </remarks>
-public class ZEDManager : MonoBehaviour
+public class ZEDManager : MonoBehaviour, IEventListener
 {
 
     /// <summary>
@@ -584,6 +586,10 @@ public class ZEDManager : MonoBehaviour
         }
     }
 
+    [SerializeField] [HideInInspector] private IntObject m_cameraBrightnessObject = null;
+    
+    
+    
     /// <summary>
     /// Whether to enable the new color/gamma curve added to the ZED SDK in v3.0. Exposes more detail in darker regions 
     /// and removes a slight red bias. 
@@ -2345,7 +2351,8 @@ public class ZEDManager : MonoBehaviour
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////// ENGINE UPDATE REGION   /////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////// ENGINE
+    /// REGION   /////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #region ENGINE_UPDATE
     /// <summary>
@@ -2459,6 +2466,15 @@ public class ZEDManager : MonoBehaviour
     {
         if (IsStereoRig && hasXRDevice())
             arRig.CollectPose(); //Save headset pose with current timestamp. 
+    }
+
+    /// <summary>
+    /// Poll the current camera brightness value
+    /// </summary>
+    private void OnCameraBrightnessChanged()
+    {
+        if (m_cameraBrightnessObject != null)
+            CameraBrightness = m_cameraBrightnessObject.Value;
     }
 
     /// <summary>
@@ -2868,6 +2884,8 @@ public class ZEDManager : MonoBehaviour
         zedRigDisplayer = new GameObject("ZEDRigDisplayer");
         arRig = zedRigDisplayer.AddComponent<ZEDMixedRealityPlugin>();
 
+        arRig.headTrackable = GetComponent<GetTrackable>();
+
         /*Screens left and right */
         GameObject leftScreen = GameObject.CreatePrimitive(PrimitiveType.Quad);
         leftScreen.name = "Quad - Left";
@@ -2880,6 +2898,7 @@ public class ZEDManager : MonoBehaviour
         meshLeftScreen.sharedMaterial = Resources.Load("Materials/Unlit/Mat_ZED_Unlit") as Material;
         leftScreen.layer = arLayer;
         GameObject.Destroy(leftScreen.GetComponent<MeshCollider>());
+
 
         GameObject rightScreen = GameObject.CreatePrimitive(PrimitiveType.Quad);
         rightScreen.name = "Quad - Right";
@@ -2917,11 +2936,16 @@ public class ZEDManager : MonoBehaviour
         camR.allowHDR = false;
         camR.allowMSAA = false;
         camR.depth = camRightTransform.GetComponent<Camera>().depth;
+        
+        
+        XRDevice.DisableAutoXRCameraTracking(camR, true);
+        XRDevice.DisableAutoXRCameraTracking(camL, true);
+        
 
         HideFromWrongCameras.RegisterZEDCam(camL);
         HideFromWrongCameras lhider = leftScreen.AddComponent<HideFromWrongCameras>();
         lhider.SetRenderCamera(camL);
-        lhider.showInNonZEDCameras = false;
+        lhider.showInNonZEDCameras = true;
 
         HideFromWrongCameras.RegisterZEDCam(camR);
         HideFromWrongCameras rhider = rightScreen.AddComponent<HideFromWrongCameras>();
@@ -3024,6 +3048,21 @@ public class ZEDManager : MonoBehaviour
 
     }
 
+
+    public void SetResolution1080()
+    {
+        if(resolution == RESOLUTION.HD1080)
+            return;
+        resolution = sl.RESOLUTION.HD1080;
+        Reset();
+    }
+    public void SetResolution720()
+    {
+        if(resolution == RESOLUTION.HD720)
+            return;
+        resolution = sl.RESOLUTION.HD720;
+        Reset();
+    }
 
     public void InitVideoSettings(VideoSettingsInitMode mode)
     {
@@ -3259,6 +3298,26 @@ public class ZEDManager : MonoBehaviour
     }
 #endif
 
+#region Event Listener
+    
+    public void OnEnable() => m_cameraBrightnessObject.Event.RegisterListener(this);
 
+    public void OnDisable() => m_cameraBrightnessObject.Event.UnregisterListener(this);
+
+    public void OnEventRaised(Simteam.Events.Object evtObj, IEvent sender)
+    {
+        EventTracker.Track(
+            " OnEventRaised",
+            "Sender " + sender,
+            evtObj,
+            "InstanceID " + GetInstanceID() + "; GameObject " + name);
+        
+        if(evtObj == m_cameraBrightnessObject)
+            OnCameraBrightnessChanged();
+    }
+
+    public UnityEngine.Object GetObject() => this;
+
+#endregion
 }
 
