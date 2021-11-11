@@ -5,9 +5,13 @@ using UnityEngine.XR;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+
+// NVT Port
 using FVW.Modules.Tracking;
 using Simteam.Events;
 using sl;
+
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -21,7 +25,7 @@ using UnityEditor;
 /// ZEDManager is attached to the root objects in the ZED_Rig_Mono and ZED_Rig_Stereo prefabs.
 /// If using ZED_Rig_Stereo, it will set isStereoRig to true, which triggers several behaviors unique to stereo pass-through AR.
 /// </remarks>
-public class ZEDManager : MonoBehaviour, IEventListener
+public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
 {
 
     /// <summary>
@@ -612,7 +616,7 @@ public class ZEDManager : MonoBehaviour, IEventListener
         }
     }
 
-    [SerializeField] [HideInInspector] private IntObject m_cameraBrightnessObject = null;
+    [SerializeField] [HideInInspector] private IntObject m_cameraBrightnessObject = null; // NVT Port
     
     
     
@@ -2491,6 +2495,16 @@ public class ZEDManager : MonoBehaviour, IEventListener
         if (IsStereoRig && hasXRDevice())
             arRig.CollectPose(); //Save headset pose with current timestamp.
     }
+	
+	/// <summary>
+    /// Poll the current camera brightness value // NVT Port
+    /// </summary>
+    private void OnCameraBrightnessChanged()
+    {
+        if (m_cameraBrightnessObject != null)
+            CameraBrightness = m_cameraBrightnessObject.Value;
+    }
+
 
     /// <summary>
     /// Updates images, collects HMD poses for latency correction, and applies tracking.
@@ -2912,6 +2926,8 @@ public class ZEDManager : MonoBehaviour, IEventListener
 
         zedRigDisplayer = new GameObject("ZEDRigDisplayer");
         arRig = zedRigDisplayer.AddComponent<ZEDMixedRealityPlugin>();
+		
+		arRig.headTrackable = GetComponent<GetTrackable>(); // NVT Port
 
         /* Screen */
         GameObject centerScreen = GameObject.CreatePrimitive(PrimitiveType.Quad);
@@ -2938,11 +2954,13 @@ public class ZEDManager : MonoBehaviour, IEventListener
         cam.allowHDR = false;
         cam.allowMSAA = false;
         cam.depth = camRightTransform.GetComponent<Camera>().depth;
+		
+		XRDevice.DisableAutoXRCameraTracking(cam, true); // NVT Port
 
          HideFromWrongCameras.RegisterZEDCam(cam);
          HideFromWrongCameras hider = centerScreen.AddComponent<HideFromWrongCameras>();
          hider.SetRenderCamera(cam);
-         hider.showInNonZEDCameras = false;
+         hider.showInNonZEDCameras = true; // NVT Port
          SetLayerRecursively(camCenter, arLayer);
 
         //Hide camera in editor.
@@ -3093,6 +3111,21 @@ public class ZEDManager : MonoBehaviour, IEventListener
             Application.Quit();
 #endif
         }
+    }
+	
+	public void SetResolution1080() // NVT Port
+    {
+        if(resolution == RESOLUTION.HD1080)
+            return;
+        resolution = sl.RESOLUTION.HD1080;
+        Reset();
+    }
+    public void SetResolution720() // NVT Port
+    {
+        if(resolution == RESOLUTION.HD720)
+            return;
+        resolution = sl.RESOLUTION.HD720;
+        Reset();
     }
 
     public void InitVideoSettings(VideoSettingsInitMode mode)
@@ -3331,6 +3364,8 @@ public class ZEDManager : MonoBehaviour, IEventListener
 
 #region Event Listener
     
+	// NVT Port
+	
     public void OnEnable() => m_cameraBrightnessObject.Event.RegisterListener(this);
 
     public void OnDisable() => m_cameraBrightnessObject.Event.UnregisterListener(this);

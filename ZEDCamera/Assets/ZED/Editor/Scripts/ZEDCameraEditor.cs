@@ -3,6 +3,7 @@
 using Simteam.Events;
 using UnityEngine;
 using UnityEditor;
+using Simteam.Events; // NVT Port
 
 /// <summary>
 /// Custom editor used by ZEDManager to extend the default panel shown in the Inspector.
@@ -57,7 +58,7 @@ public class ZEDCameraEditor : Editor
     private SerializedProperty depthOcclusionProperty;
     private SerializedProperty arpostProcessingPropery;
     private SerializedProperty camBrightnessProperty;
-    private SerializedProperty camBrightnessObjectProperty;
+    private SerializedProperty camBrightnessObjectProperty; // NVT Port
 
     //Recording Prop
     private SerializedProperty svoOutputFileNameProperty;
@@ -245,10 +246,10 @@ public class ZEDCameraEditor : Editor
 
 
         ///Rendering Serialized Properties
-        depthOcclusionProperty      = serializedObject.FindProperty("depthOcclusion");
-        arpostProcessingPropery     = serializedObject.FindProperty("postProcessing");
-        camBrightnessProperty       = serializedObject.FindProperty("m_cameraBrightness");
-        camBrightnessObjectProperty = serializedObject.FindProperty("m_cameraBrightnessObject");
+        depthOcclusionProperty      = serializedObject.FindProperty("depthOcclusion"); // NVT Port
+        arpostProcessingPropery     = serializedObject.FindProperty("postProcessing"); // NVT Port
+        camBrightnessProperty       = serializedObject.FindProperty("m_cameraBrightness"); // NVT Port
+        camBrightnessObjectProperty = serializedObject.FindProperty("m_cameraBrightnessObject"); // NVT Port
 
 
         ///Spatial Mapping Serialized Properties
@@ -575,6 +576,7 @@ public class ZEDCameraEditor : Editor
         "This is a rendering setting that doesn't affect the raw input from the camera.");
         camBrightnessProperty.intValue = EditorGUILayout.IntSlider(camBrightnessPropertyLabel, camBrightnessProperty.intValue, 0, 100);
 
+		// NVT Port
         GUIContent camBrightnessObjectPropertyLabel = new GUIContent("Camera Brightness Object", "Object which holds the current camera brightness value");
         camBrightnessObjectProperty.objectReferenceValue = EditorGUILayout.ObjectField(camBrightnessObjectPropertyLabel,camBrightnessObjectProperty.objectReferenceValue, typeof(IntObject),true);
         

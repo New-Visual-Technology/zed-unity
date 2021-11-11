@@ -7,6 +7,7 @@ using UnityEngine.XR;
 using System.IO;
 using UnityEngine.Rendering;
 using System.Collections.Generic;
+using FVW.Modules.Tracking; // NVT Port
 
 /// <summary>
 /// In pass-through AR mode, handles the final output to the VR headset, positioning the final images
@@ -327,7 +328,8 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
 #endif
     }
 
-    public GetTrackable headTrackable;
+    public GetTrackable headTrackable; // NVT Port
+	
     private void Awake()
 	{
         //Initialize the latency tracking only if a supported headset is detected.
@@ -402,6 +404,16 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
         LoadHmdToZEDCalibration();
 
 	}
+	
+	// NVT Port
+	private void Update()
+    {
+	    finalCameraLeft.transform.position = headTrackable.GetPosition();
+	    finalCameraLeft.transform.rotation = headTrackable.GetRotation();
+	    
+	    finalCameraRight.transform.position = headTrackable.GetPosition();
+	    finalCameraRight.transform.rotation = headTrackable.GetRotation();
+    }
 
     /// <summary>
     /// Computes the size of the final planes.
@@ -510,10 +522,16 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
 
 		KeyPose k = new KeyPose();
 
-        InputTracking.GetNodeStates(nodeStates);
-        XRNodeState nodeState = nodeStates.Find(node => node.nodeType == XRNode.Head);
-        nodeState.TryGetRotation(out k.Orientation);
-        nodeState.TryGetPosition(out k.Translation);
+		// NVT Port
+
+        //InputTracking.GetNodeStates(nodeStates);
+        //XRNodeState nodeState = nodeStates.Find(node => node.nodeType == XRNode.Head);
+        //nodeState.TryGetRotation(out k.Orientation);
+        //nodeState.TryGetPosition(out k.Translation);
+		
+		k.Orientation = headTrackable.GetRotation();
+        k.Translation = headTrackable.GetPosition();
+		
         if (manager.zedCamera.IsCameraReady)
 		{
 			k.Timestamp = manager.zedCamera.GetCurrentTimeStamp();
@@ -605,11 +623,16 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
 
         Transform tmpHMD = transform;
 
-        InputTracking.GetNodeStates(nodeStates);
-        XRNodeState nodeState = nodeStates.Find(node => node.nodeType == XRNode.Head);
-        nodeState.TryGetRotation(out Quaternion rot);
-        nodeState.TryGetPosition(out Vector3 pos);
-        Pose hmdTransform = new Pose(pos, rot);
+		// NVT Port
+
+        //InputTracking.GetNodeStates(nodeStates);
+        //XRNodeState nodeState = nodeStates.Find(node => node.nodeType == XRNode.Head);
+        //nodeState.TryGetRotation(out Quaternion rot);
+        //nodeState.TryGetPosition(out Vector3 pos);
+        //Pose hmdTransform = new Pose(pos, rot);
+		
+		// tmpHMD.position = headTrackable.GetPosition();
+        // tmpHMD.rotation = headTrackable.GetRotation();
 
         Quaternion r = Quaternion.identity;
         Vector3 t = Vector3.zero;
@@ -660,11 +683,13 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
     {
         hasVRDevice = hasXRDevice();
 
-        InputTracking.GetNodeStates(nodeStates);
-        XRNodeState nodeState = nodeStates.Find(node => node.nodeType == XRNode.Head);
-        nodeState.TryGetRotation(out Quaternion rot);
-        nodeState.TryGetPosition(out Vector3 pos);
-        Pose hmdTransform = new Pose(pos, rot);
+		// NVT Port
+        //InputTracking.GetNodeStates(nodeStates);
+        //XRNodeState nodeState = nodeStates.Find(node => node.nodeType == XRNode.Head);
+        //nodeState.TryGetRotation(out Quaternion rot);
+        //nodeState.TryGetPosition(out Vector3 pos);
+        //Pose hmdTransform = new Pose(pos, rot);
+		Pose hmdTransform = new Pose(headTrackable.GetPosition(), headTrackable.GetRotation());
 
         trackingData.trackingState = (int)manager.ZEDTrackingState; //Whether the ZED's tracking is currently valid (not off or unable to localize).
         trackingData.zedPathTransform = new Pose(position, orientation);
@@ -730,11 +755,15 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
 
                 if ((!manager.IsZEDReady && manager.IsStereoRig))
                 {
+					
+					// NVT Port
                     System.Collections.Generic.List<XRNodeState> nodeStates = new System.Collections.Generic.List<XRNodeState>();
-                    InputTracking.GetNodeStates(nodeStates);
-                    XRNodeState nodeState = nodeStates.Find(node => node.nodeType == XRNode.Head);
-                    nodeState.TryGetRotation(out Quaternion rot);
-                    nodeState.TryGetPosition(out Vector3 pos);
+                    //InputTracking.GetNodeStates(nodeStates);
+                    //XRNodeState nodeState = nodeStates.Find(node => node.nodeType == XRNode.Head);
+                    //nodeState.TryGetRotation(out Quaternion rot);
+                    //nodeState.TryGetPosition(out Vector3 pos);
+					Quaternion rot = headTrackable.GetRotation();
+					Vector3    pos = headTrackable.GetPosition();
 
                     quadCenter.localRotation = rot;
                     quadCenter.localPosition = pos + quadCenter.localRotation * offset;
@@ -756,12 +785,15 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
 
             if ((!manager.IsZEDReady && manager.IsStereoRig))
             {
+				// NVT Port
                 System.Collections.Generic.List<XRNodeState> nodeStates = new System.Collections.Generic.List<XRNodeState>();
-                InputTracking.GetNodeStates(nodeStates);
-                XRNodeState nodeState = nodeStates.Find(node => node.nodeType == XRNode.Head);
-                nodeState.TryGetRotation(out Quaternion rot);
-                nodeState.TryGetPosition(out Vector3 pos);
-
+                //InputTracking.GetNodeStates(nodeStates);
+                //XRNodeState nodeState = nodeStates.Find(node => node.nodeType == XRNode.Head);
+                //nodeState.TryGetRotation(out Quaternion rot);
+                //nodeState.TryGetPosition(out Vector3 pos);
+				Quaternion rot = headTrackable.GetRotation();
+				Vector3    pos = headTrackable.GetPosition();
+				
                 quadCenter.localRotation = rot;
                 quadCenter.localPosition = pos + quadCenter.localRotation * offset;
             }
