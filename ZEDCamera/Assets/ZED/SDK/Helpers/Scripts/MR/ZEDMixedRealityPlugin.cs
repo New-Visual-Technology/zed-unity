@@ -408,11 +408,8 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
 	// NVT Port
 	private void Update()
     {
-	    finalCameraLeft.transform.position = headTrackable.GetPosition();
-	    finalCameraLeft.transform.rotation = headTrackable.GetRotation();
-	    
-	    finalCameraRight.transform.position = headTrackable.GetPosition();
-	    finalCameraRight.transform.rotation = headTrackable.GetRotation();
+	    finalCameraCenter.transform.position = headTrackable.GetPosition();
+	    finalCameraCenter.transform.rotation = headTrackable.GetRotation();
     }
 
     /// <summary>
