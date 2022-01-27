@@ -576,20 +576,20 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
         Quaternion r;
         //r = latencyPose.rotation;
 
-#if UNITY_2019_3_OR_NEWER
-        List<InputDevice> eyes = new List<InputDevice>();
-        InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.HeadMounted, eyes);
-
-        if (eyes.Count > 0) // if a headset is detected
-        {
-            var eye = eyes[0];
-            eye.TryGetFeatureValue(CommonUsages.centerEyePosition, out Vector3 centerEyePosition);
-            eye.TryGetFeatureValue(CommonUsages.centerEyeRotation, out Quaternion centerEyeRotation);
-
-            finalCenterEye.transform.localPosition = centerEyePosition;
-            finalCenterEye.transform.localRotation = centerEyeRotation;
-        }
-#endif
+//#if UNITY_2019_3_OR_NEWER
+//        List<InputDevice> eyes = new List<InputDevice>();
+//        InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.HeadMounted, eyes);
+//
+//        if (eyes.Count > 0) // if a headset is detected
+//        {
+//            var eye = eyes[0];
+//            eye.TryGetFeatureValue(CommonUsages.centerEyePosition, out Vector3 centerEyePosition);
+//            eye.TryGetFeatureValue(CommonUsages.centerEyeRotation, out Quaternion centerEyeRotation);
+//
+//            finalCenterEye.transform.localPosition = centerEyePosition;
+//            finalCenterEye.transform.localRotation = centerEyeRotation;
+//        }
+//#endif
 
         //Modified code to ensure view in HMD does not play like a movie screen
         if (manager.inputType == sl.INPUT_TYPE.INPUT_TYPE_SVO || manager.inputType == sl.INPUT_TYPE.INPUT_TYPE_STREAM)
