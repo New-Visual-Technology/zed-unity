@@ -459,6 +459,9 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
 		float perception_distance = 1.0f;
 		float zed2eye_distance = 0.1f; //Estimating 10cm between your eye and physical location of the ZED Mini.
 		hasVRDevice = hasXRDevice();
+		
+		if(XRSettings.eyeTextureWidth == 0  || XRSettings.eyeTextureHeight == 0) //nvt port
+            Debug.LogWarning("XRSettings.eyetexture width or height is 0. Maybe XR didnt initialize correctly"); //nvt port
 
 		if (hasVRDevice) {
 			sl.CalibrationParameters parameters = zedCamera.CalibrationParametersRectified;
