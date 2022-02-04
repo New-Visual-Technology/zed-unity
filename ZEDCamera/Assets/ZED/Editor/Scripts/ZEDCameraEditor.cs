@@ -1369,7 +1369,7 @@ public class ZEDCameraEditor : Editor
 
             EditorGUI.BeginChangeCheck();
             autoWhiteBalanceProperty.boolValue = EditorGUILayout.Toggle(" AWB ", autoWhiteBalanceProperty.boolValue, EditorStyles.toggle);
-            if (Application.isPlaying && manager.zedCamera.IsCameraReady)
+            if (Application.isPlaying && manager.zedCamera is { IsCameraReady: true })
             {
                 if (EditorGUI.EndChangeCheck())
                 {

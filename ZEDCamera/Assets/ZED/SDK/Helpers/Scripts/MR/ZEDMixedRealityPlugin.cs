@@ -313,6 +313,7 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
                 return true;
             }
         }
+        Debug.LogWarning("This should only happen while shutting down");
         return false;
 #else
         return XRDevice.isPresent;
@@ -460,7 +461,9 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
 		float zed2eye_distance = 0.1f; //Estimating 10cm between your eye and physical location of the ZED Mini.
 		hasVRDevice = hasXRDevice();
 
-		if (hasVRDevice) {
+        if(XRSettings.eyeTextureWidth == 0  || XRSettings.eyeTextureHeight == 0)
+            Debug.LogWarning("XRSettings.eyetexture width or height is 0. Maybe XR didnt initialize correctly");
+        if (hasVRDevice) {
 			sl.CalibrationParameters parameters = zedCamera.CalibrationParametersRectified;
 			scaleFromZED = ComputeSizePlaneWithGamma (new sl.Resolution ((uint)zedCamera.ImageWidth, (uint)zedCamera.ImageHeight),
 				perception_distance, zed2eye_distance, offset.z,
@@ -576,20 +579,23 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
         Quaternion r;
         //r = latencyPose.rotation;
 
-//#if UNITY_2019_3_OR_NEWER
-//        List<InputDevice> eyes = new List<InputDevice>();
-//        InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.HeadMounted, eyes);
+        
+        //finalCenterEye.transform.localPosition
+        
+// #if UNITY_2019_3_OR_NEWER
+//         List<InputDevice> eyes = new List<InputDevice>();
+//         InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.HeadMounted, eyes);
 //
-//        if (eyes.Count > 0) // if a headset is detected
-//        {
-//            var eye = eyes[0];
-//            eye.TryGetFeatureValue(CommonUsages.centerEyePosition, out Vector3 centerEyePosition);
-//            eye.TryGetFeatureValue(CommonUsages.centerEyeRotation, out Quaternion centerEyeRotation);
+//         if (eyes.Count > 0) // if a headset is detected
+//         {
+//             var eye = eyes[0];
+//             eye.TryGetFeatureValue(CommonUsages.centerEyePosition, out Vector3 centerEyePosition);
+//             eye.TryGetFeatureValue(CommonUsages.centerEyeRotation, out Quaternion centerEyeRotation);
 //
-//            finalCenterEye.transform.localPosition = centerEyePosition;
-//            finalCenterEye.transform.localRotation = centerEyeRotation;
-//        }
-//#endif
+//             finalCenterEye.transform.localPosition = centerEyePosition;
+//             finalCenterEye.transform.localRotation = centerEyeRotation;
+//         }
+// #endif
 
         //Modified code to ensure view in HMD does not play like a movie screen
         if (manager.inputType == sl.INPUT_TYPE.INPUT_TYPE_SVO || manager.inputType == sl.INPUT_TYPE.INPUT_TYPE_STREAM)
@@ -722,13 +728,13 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
 	{
 		if (!ready) //Make sure intermediate cameras are rendering to the quad's materials.
 		{
-			if (leftScreen.target != null && leftScreen.target.IsCreated())
+			if (leftScreen !=null && leftScreen.target != null && leftScreen.target.IsCreated())
 			{
                 centerMaterial.SetTexture(mainTexLeftID, leftScreen.target);
 				ready = true;
 			}
 			else ready = false;
-			if (rightScreen.target != null && rightScreen.target.IsCreated())
+			if (rightScreen !=null && rightScreen.target != null && rightScreen.target.IsCreated())
 			{
                 centerMaterial.SetTexture(mainTexRightID, rightScreen.target);
 				ready = true;
