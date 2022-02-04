@@ -1,2 +1,2 @@
 # NVT Port Version Notes
-## ZED 3.6 -- NVT Port 1.0
+## ZED 3.6 -- NVT Port 1.1
