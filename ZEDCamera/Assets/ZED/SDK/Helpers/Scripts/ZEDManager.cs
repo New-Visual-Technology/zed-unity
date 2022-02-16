@@ -1532,7 +1532,6 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
                 return true;
             }
         }
-        Debug.LogWarning("This should only happen while shutting down");
         return false;
 #else
         return XRDevice.isPresent;

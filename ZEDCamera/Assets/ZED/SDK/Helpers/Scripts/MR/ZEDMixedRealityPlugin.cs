@@ -313,7 +313,6 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
                 return true;
             }
         }
-        Debug.LogWarning("This should only happen while shutting down");
         return false;
 #else
         return XRDevice.isPresent;

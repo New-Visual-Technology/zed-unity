@@ -1482,6 +1482,13 @@ public class ZEDRenderingPlane : MonoBehaviour
         newmat[2, 2] = -(far + near) / (far - near);
         newmat[2, 3] = -(2.0f * far * near) / (far - near);
         cam.projectionMatrix = newmat;
+        
+        var cameraData = cam.GetUniversalAdditionalCameraData();
+        foreach (Camera subCamera in cameraData.cameraStack)
+        {
+            subCamera.projectionMatrix = newmat;
+        }
+
 
         nearplane = near;
         farplane = far;
