@@ -2,6 +2,7 @@
 
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 /// <summary>
 /// Responsible for actually mixing the real and virtual images, and displaying them in a
@@ -367,11 +368,11 @@ public class ZEDRenderingPlane : MonoBehaviour
     /// <summary>
     /// Default near plane value. Overrides camera's settings on start but will update if camera values change at runtime.
     /// </summary>
-    private float nearplane = 0.1f;
+    private float nearplane = 0.01f;
     /// <summary>
     /// Default far plane value. Overrides camera's settings on start but will update if camera values change at runtime.
     /// </summary>
-    private float farplane = 500.0f;
+    private float farplane = 100.0f;
 
     /// <summary>
     /// The target RenderTexture we'll render to if in AR mode.
@@ -546,6 +547,15 @@ public class ZEDRenderingPlane : MonoBehaviour
             //mainCamera.farClipPlane = 500.0f;
             scale(canvas.gameObject, GetFOVYFromProjectionMatrix(cam.projectionMatrix));
             cam.fieldOfView = zedCamera.VerticalFieldOfView * Mathf.Rad2Deg;
+            
+            // Set same settings for cameras in stack
+            var cameraData = cam.GetUniversalAdditionalCameraData();
+            foreach (Camera subCamera in cameraData.cameraStack)
+            {
+                subCamera.fieldOfView = zedCamera.VerticalFieldOfView * Mathf.Rad2Deg;
+                subCamera.nearClipPlane = nearplane;
+                subCamera.farClipPlane = farplane;
+            }
         }
         else //Just scale the screen.
         {
@@ -904,12 +914,12 @@ public class ZEDRenderingPlane : MonoBehaviour
         {
             if (zedCamera != null && zedCamera.IsCameraReady)
             {
-                renderTextureTarget = new RenderTexture(zedCamera.ImageWidth, zedCamera.ImageHeight, 24, RenderTextureFormat.ARGB32);
+                renderTextureTarget = new RenderTexture(2208, 1242, 24, RenderTextureFormat.RGB111110Float);
                 cam.targetTexture = renderTextureTarget;
             }
             else if (sl.ZEDCamera.CheckPlugin())
             {
-                renderTextureTarget = new RenderTexture(Screen.width, Screen.height, 24, RenderTextureFormat.ARGB32);
+                renderTextureTarget = new RenderTexture(2208, 1242, 24, RenderTextureFormat.RGB111110Float);
                 cam.targetTexture = renderTextureTarget;
             }
         }
@@ -930,7 +940,7 @@ public class ZEDRenderingPlane : MonoBehaviour
         {
             if (zedCamera != null && zedCamera.IsCameraReady)
             {
-                renderTextureTarget = new RenderTexture(zedCamera.ImageWidth, zedCamera.ImageHeight, 24, RenderTextureFormat.ARGB32);
+                renderTextureTarget = new RenderTexture(2208, 1242, 24, RenderTextureFormat.RGB111110Float);
                 cam.targetTexture = renderTextureTarget;
             }
 
@@ -1472,6 +1482,13 @@ public class ZEDRenderingPlane : MonoBehaviour
         newmat[2, 2] = -(far + near) / (far - near);
         newmat[2, 3] = -(2.0f * far * near) / (far - near);
         cam.projectionMatrix = newmat;
+        
+        var cameraData = cam.GetUniversalAdditionalCameraData();
+        foreach (Camera subCamera in cameraData.cameraStack)
+        {
+            subCamera.projectionMatrix = newmat;
+        }
+
 
         nearplane = near;
         farplane = far;

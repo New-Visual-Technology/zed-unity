@@ -1096,7 +1096,7 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
     /// <summary>
     /// Set the camera in Flip mode
     /// </summary>
-    private sl.FLIP_MODE cameraFlipMode = sl.FLIP_MODE.AUTO;
+    private sl.FLIP_MODE cameraFlipMode = sl.FLIP_MODE.OFF;
     /// <summary>
     /// Whether the camera is currently being tracked using the ZED's inside-out tracking.
     /// </summary>ccvv
