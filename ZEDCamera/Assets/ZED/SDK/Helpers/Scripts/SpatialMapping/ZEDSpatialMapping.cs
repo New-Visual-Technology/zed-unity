@@ -1602,7 +1602,6 @@ public class ZEDSpatialMapping
             vertices = new Vector3[numVertices];
             uvs = new Vector2[numVertices];
             triangles = new int[3 * numTriangles];
-            Debug.Log(texturesSize[0] + "  /  " + texturesSize[1]);
             return r;
         }
 

@@ -2,12 +2,12 @@
 {
 	Properties
 	{
-		_MainTexLeft ("Texture", 2D) = "white" {}
+		_MainTexLeft("Texture", 2D) = "white" {}
 		_MainTexRight("Texture", 2D) = "white" {}
 	}
-	SubShader
+		SubShader
 	{
-		Tags { "RenderType"="Opaque" }
+		Tags { "RenderType" = "Opaque" }
 		LOD 100
 
 		Pass
@@ -15,7 +15,7 @@
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
-			
+
 			#include "UnityCG.cginc"
 
 			struct appdata
@@ -39,8 +39,8 @@
 			float4 _MainTexLeft_ST;
 			sampler2D _MainTexRight;
 			float4 _MainTexRight_ST;
-			
-			v2f vert (appdata v)
+
+			v2f vert(appdata v)
 			{
 				v2f o;
 
@@ -53,11 +53,11 @@
 				o.uvRight = TRANSFORM_TEX(v.uvRight, _MainTexRight);
 				return o;
 			}
-			
-			fixed4 frag (v2f i) : SV_Target
+
+			fixed4 frag(v2f i) : SV_Target
 			{
 				UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
-			
+
 			if (unity_StereoEyeIndex == 0) {
 				return tex2D(_MainTexLeft, i.uvLeft);
 			}

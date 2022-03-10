@@ -680,7 +680,6 @@ MonoBehaviour:
   animalDetectionConfidenceThreshold: 60
   electronicsDetectionConfidenceThreshold: 60
   fruitVegetableDetectionConfidenceThreshold: 60
-  sportDetectionConfidenceThreshold: 60
   objectClassPersonFilter: 1
   objectClassVehicleFilter: 1
   objectClassBagFilter: 1

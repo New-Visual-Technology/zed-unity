@@ -82,3 +82,4 @@ Material:
     - _EmissionColor: {r: 0.26764697, g: 0.5210952, b: 0.7, a: 1}
     - _WireColor: {r: 1, g: 1, b: 1, a: 1}
     - g_vOutlineColor: {r: 0, g: 0.86764693, b: 1, a: 1}
+  m_BuildTextureStacks: []

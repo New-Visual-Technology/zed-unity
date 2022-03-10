@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-#if ZED_LWRP || ZED_HDRP || ZED_URP
+#if ZED_HDRP || ZED_URP
 using UnityEngine.Rendering;
 #endif 
 
@@ -31,8 +31,7 @@ public class LookAtCameraPartialAxis : MonoBehaviour
 
     private void Start()
     {
-        //Camera.onPreRender += LookAtCamera;
-#if ZED_LWRP || ZED_HDRP || ZED_URP
+#if ZED_HDRP || ZED_URP
         RenderPipelineManager.beginCameraRendering += LookAtCamera;
 #else
         Camera.onPreRender += LookAtCamera;
@@ -41,8 +40,7 @@ public class LookAtCameraPartialAxis : MonoBehaviour
 
     private void OnDestroy()
     {
-        //Camera.onPreRender -= LookAtCamera;
-#if ZED_LWRP || ZED_HDRP || ZED_URP
+#if ZED_HDRP || ZED_URP
         RenderPipelineManager.beginCameraRendering -= LookAtCamera;
 #else
         Camera.onPreRender -= LookAtCamera;
@@ -50,7 +48,7 @@ public class LookAtCameraPartialAxis : MonoBehaviour
     }
 
 
-#if ZED_LWRP || ZED_URP || ZED_HDRP
+#if ZED_URP || ZED_HDRP
 
     /// <summary>
     /// Rotates the transform to face the target camera on all enabled axes. 

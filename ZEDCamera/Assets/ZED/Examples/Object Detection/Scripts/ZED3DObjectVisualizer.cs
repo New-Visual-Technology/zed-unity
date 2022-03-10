@@ -187,11 +187,12 @@ public class ZED3DObjectVisualizer : MonoBehaviour
             //Get the box and update its distance value.
             GameObject bbox = GetBBoxForObject(dobj);
 
-            Vector3 dobj_position = dobj.Get3DWorldPosition();
+            //Move the box into position.
+            Vector3 obj_position = dobj.Get3DWorldPosition();
 
-            if (!ZEDSupportFunctions.IsVector3NaN(dobj_position))
+            if (!ZEDSupportFunctions.IsVector3NaN(obj_position))
             {
-                bbox.transform.position = dobj_position;
+                bbox.transform.position = obj_position;
                 if (floorBBoxPosition)
                 {
                     bbox.transform.position = new Vector3(bbox.transform.position.x, 0, bbox.transform.position.z);

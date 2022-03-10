@@ -201,7 +201,7 @@ half4 computeLightingLWRP(float3 albedo, float3 normals, float3 worldPos, float 
 			float distanceSqr = length(lightVec) / (1 / spotLights[indexSpotLights].params.z);
 			//float distanceSqr = max(dot(lightVec, lightVec), HALF_MIN);
 			//float att = DistanceAttenuation(distanceSqr, spotLights[indexSpotLights].color);
-			float att = DistanceAttenuation(distanceSqr, float4(1, 1, 1, 1));
+			float att = DistanceAttenuation(distanceSqr, half2(1, 1));
 			//float att = DistanceAttenuation(.0001, spotLights[indexSpotLights].color);
 
 			att = saturate(att);
@@ -225,7 +225,7 @@ half4 computeLightingLWRP(float3 albedo, float3 normals, float3 worldPos, float 
 			Light p;
 			p.direction = -spotLights[indexSpotLights].direction.xyz;
 			p.distanceAttenuation = att;
-			p.color = spotLights[indexSpotLights].color*att*alpha;
+			p.color = spotLights[indexSpotLights].color.xyz*att*alpha;
 			p.shadowAttenuation = 1.0;
 
 			c.rgb += LightingPhysicallyBased(brdfDataRaw, p, normals, worldViewDir);

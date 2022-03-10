@@ -58,8 +58,8 @@ public class ZEDRenderingPlane : MonoBehaviour
 
     /// <summary>
     /// Which camera on the ZED the image/depth/etc. comes from.
-    /// If set to LEFT, RIGHT, this may be overridden by the camera's stereoTargetEye.
-    /// If set to LEFT_FORCE, RIGHT_FORCE, it will not be changed.
+    /// If set to LEFT or RIGHT, this may be overridden by the camera's stereoTargetEye.
+    /// If set to LEFT_FORCE or RIGHT_FORCE, it will not be changed.
     /// </summary>
     [Tooltip("Which camera on the ZED the image/depth/etc. comes from.\r\n" +
         "If set to LEFT or RIGHT, this may be overridden by the camera's stereoTargetEye.\r\n" +
@@ -121,7 +121,7 @@ public class ZEDRenderingPlane : MonoBehaviour
     /// </summary>
     Texture2D normals;
 
-#if !ZED_LWRP && !ZED_HDRP && !ZED_URP
+#if !ZED_HDRP && !ZED_URP
     /// <summary>
     /// CommandBuffer to integrate the depth into Unity's forward or deferred  pipeline.
     /// </summary>
@@ -402,18 +402,6 @@ public class ZEDRenderingPlane : MonoBehaviour
         }
 
         hider.SetRenderCamera(cam); //This canvas will allow this camera to render it.
-
-#if ZED_LWRP
-        Material Mat_Zed_Forward_Lighting = Resources.Load("Materials/Lighting/Mat_ZED_Forward_Lighting_LWRP") as Material;
-        Material Mat_Zed_GreenScreen = Resources.Load("Materials/Mat_ZED_GreenScreen_LWRP") as Material;
-        if(!GetComponent<GreenScreenManager>()) canvas.GetComponent<MeshRenderer>().material = Mat_Zed_Forward_Lighting;
-        else canvas.GetComponent<MeshRenderer>().material = Mat_Zed_GreenScreen;
-#elif ZED_URP
-        Material Mat_Zed_Forward_Lighting = Resources.Load("Materials/Lighting/Mat_ZED_Forward_Lighting_URP") as Material;
-        Material Mat_Zed_GreenScreen = Resources.Load("Materials/Mat_ZED_GreenScreen_URP") as Material;
-        if (!GetComponent<GreenScreenManager>()) canvas.GetComponent<MeshRenderer>().material = Mat_Zed_Forward_Lighting;
-        else canvas.GetComponent<MeshRenderer>().material = Mat_Zed_GreenScreen;
-#endif
     }
 
     /// <summary>
@@ -503,7 +491,6 @@ public class ZEDRenderingPlane : MonoBehaviour
 #if ZED_LWRP || ZED_HDRP || ZED_URP
         RenderPipelineManager.beginFrameRendering += SRPStartFrame;
 #endif
-
     }
 
 
@@ -662,7 +649,7 @@ public class ZEDRenderingPlane : MonoBehaviour
         }
     }
 
-#if !ZED_LWRP && !ZED_HDRP && !ZED_URP
+#if !ZED_HDRP && !ZED_URP
     /// <summary>
     /// Clear the depth buffer used.
     /// Called when configuring this script for the given rendering path (forward or deferred).
@@ -716,7 +703,7 @@ public class ZEDRenderingPlane : MonoBehaviour
         matRGB.SetTexture("_DepthXYZTex", depth);
         matRGB.SetTexture("_NormalsTex", normals);
 
-#if ZED_LWRP || ZED_HDRP || ZED_URP //Need FoV to calculate world space positions accurately.
+#if ZED_HDRP && !ZED_URP//Need FoV to calculate world space positions accurately.
         matRGB.SetFloat("_ZEDHFoVRad", zedCamera.GetCalibrationParameters().leftCam.hFOV * Mathf.Deg2Rad);
         matRGB.SetFloat("_ZEDVFoVRad", zedCamera.GetCalibrationParameters().leftCam.vFOV * Mathf.Deg2Rad);
         matRGB.SetFloat("_cx", zedCamera.GetCalibrationParameters().leftCam.cx / zedCamera.ImageWidth);
@@ -726,7 +713,7 @@ public class ZEDRenderingPlane : MonoBehaviour
         forwardMat.SetTexture("_MainTex", textureEye);
         forwardMat.SetTexture("_DepthXYZTex", depth);
 
-#if !ZED_LWRP && !ZED_HDRP && !ZED_URP
+#if !ZED_HDRP  && !ZED_URP
         //Clear the buffers.
         if (buffer[(int)ZED_RENDERING_MODE.FORWARD] != null)
             cam.RemoveCommandBuffer(CameraEvent.BeforeDepthTexture, buffer[(int)ZED_RENDERING_MODE.FORWARD]);
@@ -761,7 +748,7 @@ public class ZEDRenderingPlane : MonoBehaviour
         postprocessMaterial.SetTexture("ZEDMaskPostProcess", mask);
         postprocessMaterial.SetTexture("ZEDTex", textureEye);
 
-#if !ZED_LWRP && !ZED_HDRP && !ZED_URP
+#if !ZED_HDRP && !ZED_URP
 
         postProcessBuffer[(int)ZED_RENDERING_MODE.FORWARD] = new CommandBuffer();
         postProcessBuffer[(int)ZED_RENDERING_MODE.FORWARD].name = "ZED_FORWARD_POSTPROCESS";
@@ -820,7 +807,7 @@ public class ZEDRenderingPlane : MonoBehaviour
 
 
         //Clear the buffers.
-#if !ZED_LWRP && !ZED_HDRP && !ZED_URP
+#if !ZED_HDRP && !ZED_URP
         if (buffer[(int)ZED_RENDERING_MODE.FORWARD] != null)
             cam.RemoveCommandBuffer(CameraEvent.BeforeDepthTexture, buffer[(int)ZED_RENDERING_MODE.FORWARD]);
 
@@ -1184,7 +1171,7 @@ public class ZEDRenderingPlane : MonoBehaviour
             matRGB.SetInt(numberPointLightsID, pointLightIndex);
             matRGB.SetInt(numberSpotLightsID, spotLightIndex);
 
-#if !ZED_LWRP && !ZED_HDRP && !ZED_URP
+#if !ZED_HDRP && !ZED_URP
             //Add the command buffer to get shadows only if a directional light creates shadows.
             if (hasShadows != ghasShadows)
             {
@@ -1241,7 +1228,7 @@ public class ZEDRenderingPlane : MonoBehaviour
         screen.transform.localScale = new Vector3(width, height, 1);
     }
 
-#if !ZED_LWRP && !ZED_HDRP && !ZED_URP
+#if !ZED_HDRP && !ZED_URP
     /// <summary>
     /// Clears all command buffers on the camera.
     /// </summary>
@@ -1283,7 +1270,7 @@ public class ZEDRenderingPlane : MonoBehaviour
             mask.Release();
         }
 
-#if ZED_LWRP || ZED_HDRP || ZED_URP
+#if ZED_HDRP || ZED_URP
         RenderPipelineManager.beginFrameRendering -= SRPStartFrame;
 #endif
     }
@@ -1344,7 +1331,7 @@ public class ZEDRenderingPlane : MonoBehaviour
         blender.SetInt(isTexturedID, d);
     }
 
-#if ZED_LWRP || ZED_HDRP || ZED_URP
+#if ZED_HDRP || ZED_URP
     /// <summary>
     /// Blend the wireframe into the image. Used in SRP because there is no OnRenderImage automatic function.
     /// </summary>

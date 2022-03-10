@@ -4,7 +4,6 @@ using System.Threading;
 using UnityEngine.XR;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 
 // NVT Port
 using FVW.Modules.Tracking;
@@ -392,13 +391,25 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
     /// Defines if the body fitting will be applied
     /// </summary>
     [HideInInspector]
-    public bool bodyFitting = false;
+    public bool objectDetectionBodyFitting = true;
 
     /// <summary>
     /// Defines a upper depth range for detections.
     /// </summary>
     [HideInInspector]
-    public float maxRange = 40.0f;
+    public float objectDetectionMaxRange = 40.0f;
+
+    [HideInInspector]
+    public sl.BODY_FORMAT bodyFormat = sl.BODY_FORMAT.POSE_34;
+
+    /// <summary>
+    /// Defines a upper depth range for detections.
+    /// </summary>
+    [HideInInspector]
+    public sl.OBJECT_FILTERING_MODE objectDetectionFilteringMode = sl.OBJECT_FILTERING_MODE.NMS3D;
+
+    [HideInInspector]
+    public sl.BODY_FORMAT objectDetectionBodyFormat = sl.BODY_FORMAT.POSE_34;
 
     [HideInInspector]
     public sl.BODY_FORMAT bodyFormat = sl.BODY_FORMAT.POSE_34;
@@ -1725,7 +1736,7 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
             StopObjectDetection();
         }
 
-#if !ZED_LWRP && !ZED_HDRP && !ZED_URP
+#if !ZED_HDRP && !ZED_URP
         ClearRendering();
 #endif
 
@@ -1757,7 +1768,7 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
         sl.ZEDCamera.UnloadInstance((int)cameraID);
     }
 
-#if !ZED_LWRP && !ZED_HDRP && !ZED_URP
+#if !ZED_HDRP && !ZED_URP
     private void ClearRendering()
     {
         if (camLeftTransform != null)
@@ -1900,8 +1911,8 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
         //Starts a coroutine that initializes the ZED without freezing the game.
         lastInitStatus = sl.ERROR_CODE.ERROR_CODE_LAST;
         openingLaunched = false;
-        StartCoroutine(InitZED());
 
+        StartCoroutine(InitZED());
 
         OnCamBrightnessChange += SetCameraBrightness; //Subscribe event for adjusting brightness setting.
         OnMaxDepthChange += SetMaxDepthRange;
@@ -2049,6 +2060,7 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
             //If values are wrong, tweak calibration file created in ZEDMixedRealityPlugin.
             camLeftTransform.localPosition = arRig.HmdToZEDCalibration.translation;
             camLeftTransform.localRotation = arRig.HmdToZEDCalibration.rotation;
+
             if (camRightTransform) camRightTransform.localPosition = camLeftTransform.localPosition + new Vector3(zedCamera.Baseline, 0.0f, 0.0f); //Space the eyes apart.
             if (camRightTransform) camRightTransform.localRotation = camLeftTransform.localRotation;
         }
@@ -2130,6 +2142,7 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
                     leftRenderingPlane.ManageKeywordPipe(!depthOcclusion, "NO_DEPTH");
                 if (rightRenderingPlane)
                     rightRenderingPlane.ManageKeywordPipe(!depthOcclusion, "NO_DEPTH");
+
             }
             else if (renderingPath == ZEDRenderingMode.DEFERRED)
             {
@@ -2155,6 +2168,7 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
         runtimeParameters.enableDepth = true;
         runtimeParameters.confidenceThreshold = confidenceThreshold;
         runtimeParameters.textureConfidenceThreshold = textureConfidenceThreshold;
+        runtimeParameters.removeSaturatedAreas = true;
         //Don't change this reference frame. If we need normals in the world frame, better to do the conversion ourselves.
         runtimeParameters.measure3DReferenceFrame = sl.REFERENCE_FRAME.CAMERA;
 
@@ -2178,8 +2192,6 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
     {
         if (requestNewFrame && zedReady)
         {
-            ZEDGrabError = sl.ERROR_CODE.FAILURE;
-
             if (inputType == sl.INPUT_TYPE.INPUT_TYPE_SVO)
             {
                 //handle pause
@@ -2328,7 +2340,6 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
             {
                 isTrackingEnable = true;
             }
-
         }
     }
 
@@ -2687,7 +2698,7 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////// OBJECT DETECTION REGION //////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#region OBJECT_DETECTION
+    #region OBJECT_DETECTION
 
     /// <summary>
     /// True when the object detection coroutine is in the process of starting.
@@ -2700,13 +2711,19 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
     /// </summary>
     public void StartObjectDetection()
     {
+        sl.AI_Model_status AiModelStatus = sl.ZEDCamera.CheckAIModelStatus(sl.ZEDCamera.cvtDetection(objectDetectionModel));
+        if (!AiModelStatus.optimized)
+        {
+            Debug.LogError("The Model * " + objectDetectionModel.ToString() + " * has not been downloaded/optimized. Use the ZED Diagnostic tool to download/optimze all the AI model you plan to use.");
+           // return;
+        }
         //We start a coroutine so we can delay actually starting the detection.
         //This is because the main thread is locked for awhile when you call this, appearing like a freeze.
         //This time lets us deliver a log message to the user indicating that this is expected.
         StartCoroutine(startObjectDetection());
     }
 
-
+    /// <summary>
     /// <summary>
     /// Starts the object detection module after a two-frame delay, allowing us to deliver a log message
     /// to the user indicating that what appears to be a freeze is actually expected and will pass.
@@ -2739,17 +2756,18 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
             sl.dll_ObjectDetectionParameters od_param = new sl.dll_ObjectDetectionParameters();
             od_param.imageSync = objectDetectionImageSyncMode;
             od_param.enableObjectTracking = objectDetectionTracking;
-           // od_param.enable2DMask = objectDetection2DMask;
+            od_param.enable2DMask = objectDetection2DMask;
             od_param.detectionModel = objectDetectionModel;
-            od_param.maxRange = maxRange;
-            if (bodyFormat == sl.BODY_FORMAT.POSE_34 && bodyFitting == false && (objectDetectionModel == sl.DETECTION_MODEL.HUMAN_BODY_ACCURATE || objectDetectionModel == sl.DETECTION_MODEL.HUMAN_BODY_MEDIUM
+            od_param.maxRange = objectDetectionMaxRange;
+            od_param.filteringMode = objectDetectionFilteringMode;
+            if (objectDetectionBodyFormat == sl.BODY_FORMAT.POSE_34 && objectDetectionBodyFitting == false && (objectDetectionModel == sl.DETECTION_MODEL.HUMAN_BODY_ACCURATE || objectDetectionModel == sl.DETECTION_MODEL.HUMAN_BODY_MEDIUM
                                                                                 || objectDetectionModel == sl.DETECTION_MODEL.HUMAN_BODY_FAST))
             {
-                Debug.LogWarning("sl.BODY_FORMAT.POSE_32 is chosen, Skeleton Tracking will automatically enable body fitting");
-                bodyFitting = true;
+                Debug.LogWarning("sl.BODY_FORMAT.POSE_34 is chosen, Skeleton Tracking will automatically enable body fitting");
+                objectDetectionBodyFitting = true;
             }
-            od_param.bodyFormat = bodyFormat;
-            od_param.enableBodyFitting = bodyFitting;
+            od_param.bodyFormat = objectDetectionBodyFormat;
+            od_param.enableBodyFitting = objectDetectionBodyFitting;
 
             od_runtime_params.object_confidence_threshold = new int[(int)sl.OBJECT_CLASS.LAST];
             od_runtime_params.object_confidence_threshold[(int)sl.OBJECT_CLASS.PERSON] = (objectDetectionModel == sl.DETECTION_MODEL.HUMAN_BODY_ACCURATE || objectDetectionModel == sl.DETECTION_MODEL.HUMAN_BODY_FAST || objectDetectionModel == sl.DETECTION_MODEL.HUMAN_BODY_MEDIUM) ? SK_personDetectionConfidenceThreshold : OD_personDetectionConfidenceThreshold;
@@ -2810,7 +2828,6 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
         if (!objectDetectionRunning) return;
 
         //Update the runtime parameters in case the user made changes.
-        //od_runtime_params.detectionConfidenceThreshold = objectDetectionConfidenceThreshold;
         od_runtime_params.object_confidence_threshold = new int[(int)sl.OBJECT_CLASS.LAST];
         od_runtime_params.object_confidence_threshold[(int)sl.OBJECT_CLASS.PERSON] = (objectDetectionModel == sl.DETECTION_MODEL.HUMAN_BODY_ACCURATE || objectDetectionModel == sl.DETECTION_MODEL.HUMAN_BODY_FAST) ? SK_personDetectionConfidenceThreshold : OD_personDetectionConfidenceThreshold;
         od_runtime_params.object_confidence_threshold[(int)sl.OBJECT_CLASS.VEHICLE] = vehicleDetectionConfidenceThreshold;
@@ -2902,8 +2919,6 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
     #endregion
 
 
-
-
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////// AR REGION //////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2988,7 +3003,6 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
             HMDDevice = XRDevice.model;
 #endif
         }
-
 
         return zedRigDisplayer;
     }
@@ -3111,21 +3125,6 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
             Application.Quit();
 #endif
         }
-    }
-	
-	public void SetResolution1080() // NVT Port
-    {
-        if(resolution == RESOLUTION.HD1080)
-            return;
-        resolution = sl.RESOLUTION.HD1080;
-        Reset();
-    }
-    public void SetResolution720() // NVT Port
-    {
-        if(resolution == RESOLUTION.HD720)
-            return;
-        resolution = sl.RESOLUTION.HD720;
-        Reset();
     }
 
     public void InitVideoSettings(VideoSettingsInitMode mode)
