@@ -1281,7 +1281,7 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
     /// <summary>
     /// State of the image acquisition thread.
     /// </summary>
-    private bool running = false;
+    public bool running = false;
 
     /// <summary>
     /// Initialization thread.
