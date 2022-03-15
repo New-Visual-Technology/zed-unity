@@ -411,8 +411,6 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
     [HideInInspector]
     public sl.BODY_FORMAT objectDetectionBodyFormat = sl.BODY_FORMAT.POSE_34;
 
-    [HideInInspector]
-    public sl.BODY_FORMAT bodyFormat = sl.BODY_FORMAT.POSE_34;
 
     /// <summary>
     /// Detection sensitivity. Represents how sure the SDK must be that an object exists to report it. Ex: If the threshold is 80, then only objects
@@ -1874,7 +1872,8 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
             initParameters.depthMinimumDistance = 0.1f; //Allow depth calculation to very close objects.
 
             //For the Game/output window, mirror the headset view using a custom script that avoids stretching.
-            CreateMirror();
+            //nvt port - Buggy and does nothing
+            //CreateMirror();
         }
 
         //Determine if we should enable the right depth measurement, which costs performance but is needed for pass-through AR.

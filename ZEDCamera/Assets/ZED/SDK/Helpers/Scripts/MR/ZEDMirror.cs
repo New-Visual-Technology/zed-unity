@@ -60,14 +60,11 @@ public class ZEDMirror : MonoBehaviour
 /// <summary>
 /// Blits the intermediary targetTexture to the final outputTexture for rendering. Used in SRP because there is no OnRenderImage automatic function. 
 /// </summary>
-private void OnCameraEnd(ScriptableRenderContext context, Camera cam)
+private void OnFrameEnd(ScriptableRenderContext context, Camera[] cams)
 {
     if (textureOverlayLeft != null)
     {
-        if (cam == GetComponent<Camera>())
-            {
-                Graphics.Blit(textureOverlayLeft.target, (RenderTexture)null);
-            }
+        Graphics.Blit(textureOverlayLeft.target, (RenderTexture)null);
     }
 }
 #endif
