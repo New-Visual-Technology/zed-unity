@@ -31,10 +31,10 @@ public class UpgradePluginToSRP
     {
         var SRP = GraphicsSettings.renderPipelineAsset;
 
-        string zedRigMonoPath = "Assets/ZED/Prefabs/ZED_Rig_Mono.prefab";
-        string zedRigStereoPath = "Assets/ZED/Prefabs/ZED_Rig_Stereo.prefab";
-        string zedGreenScreenPath = "Assets/ZED/Examples/GreenScreen/Prefabs/ZED_GreenScreen.prefab";
-        string zedPlanetariumPath = "Assets/ZED/Examples/Planetarium/Prefabs/Planetarium.prefab";
+        string zedRigMonoPath = "Assets/Plugins/ZED/Prefabs/ZED_Rig_Mono.prefab";
+        string zedRigStereoPath = "Assets/Plugins/ZED/Prefabs/ZED_Rig_Stereo.prefab";
+        string zedGreenScreenPath = "Assets/Plugins/ZED/Examples/GreenScreen/Prefabs/ZED_GreenScreen.prefab";
+        string zedPlanetariumPath = "Assets/Plugins/ZED/Examples/Planetarium/Prefabs/Planetarium.prefab";
 
 
         if (GraphicsSettings.renderPipelineAsset != null)

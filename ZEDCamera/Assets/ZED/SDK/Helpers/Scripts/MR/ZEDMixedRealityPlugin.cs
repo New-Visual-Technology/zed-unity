@@ -1,4 +1,4 @@
-﻿//======= Copyright (c) Stereolabs Corporation, All rights reserved. ===============
+//======= Copyright (c) Stereolabs Corporation, All rights reserved. ===============
 
 using System;
 using UnityEngine;
@@ -24,41 +24,41 @@ using FVW.Modules.Tracking; // NVT Port
 public class ZEDMixedRealityPlugin : MonoBehaviour
 {
     #region DLL Calls
-	const string nameDll = sl.ZEDCommon.NameDLL;
-	[DllImport(nameDll, EntryPoint = "sl_compute_size_plane_with_gamma")]
-	private static extern System.IntPtr dllz_compute_size_plane_with_gamma(int width, int height, float perceptionDistance, float eyeToZedDistance, float planeDistance, float HMDFocal, float zedFocal);
+    const string nameDll = sl.ZEDCommon.NameDLL;
+    [DllImport(nameDll, EntryPoint = "sl_compute_size_plane_with_gamma")]
+    private static extern System.IntPtr dllz_compute_size_plane_with_gamma(int width, int height, float perceptionDistance, float eyeToZedDistance, float planeDistance, float HMDFocal, float zedFocal);
 
-	[DllImport(nameDll, EntryPoint = "sl_compute_hmd_focal")]
-	private static extern float dllz_compute_hmd_focal(int width, int height, float w, float h);
+    [DllImport(nameDll, EntryPoint = "sl_compute_hmd_focal")]
+    private static extern float dllz_compute_hmd_focal(int width, int height, float w, float h);
 
-	/*****LATENCY CORRECTOR***/
-	[DllImport(nameDll, EntryPoint = "sl_latency_corrector_add_key_pose")]
-	private static extern void dllz_latency_corrector_add_key_pose(ref Vector3 translation, ref Quaternion rotation, ulong timeStamp);
+    /*****LATENCY CORRECTOR***/
+    [DllImport(nameDll, EntryPoint = "sl_latency_corrector_add_key_pose")]
+    private static extern void dllz_latency_corrector_add_key_pose(ref Vector3 translation, ref Quaternion rotation, ulong timeStamp);
 
-	[DllImport(nameDll, EntryPoint = "sl_latency_corrector_get_transform")]
-	private static extern int dllz_latency_corrector_get_transform(ulong timeStamp, bool useLatency,out Vector3 translation, out Quaternion rotation);
+    [DllImport(nameDll, EntryPoint = "sl_latency_corrector_get_transform")]
+    private static extern int dllz_latency_corrector_get_transform(ulong timeStamp, bool useLatency, out Vector3 translation, out Quaternion rotation);
 
-	[DllImport(nameDll, EntryPoint = "sl_latency_corrector_initialize")]
-	private static extern void dllz_latency_corrector_initialize(int device);
+    [DllImport(nameDll, EntryPoint = "sl_latency_corrector_initialize")]
+    private static extern void dllz_latency_corrector_initialize(int device);
 
-	[DllImport(nameDll, EntryPoint = "sl_latency_corrector_shutdown")]
-	private static extern void dllz_latency_corrector_shutdown();
+    [DllImport(nameDll, EntryPoint = "sl_latency_corrector_shutdown")]
+    private static extern void dllz_latency_corrector_shutdown();
 
-	/****ANTI DRIFT ***/
-	[DllImport(nameDll, EntryPoint = "sl_drift_corrector_initialize")]
-	public static extern void dllz_drift_corrector_initialize();
+    /****ANTI DRIFT ***/
+    [DllImport(nameDll, EntryPoint = "sl_drift_corrector_initialize")]
+    public static extern void dllz_drift_corrector_initialize();
 
-	[DllImport(nameDll, EntryPoint = "sl_drift_corrector_shutdown")]
-	public static extern void dllz_drift_corrector_shutdown();
+    [DllImport(nameDll, EntryPoint = "sl_drift_corrector_shutdown")]
+    public static extern void dllz_drift_corrector_shutdown();
 
-	[DllImport(nameDll, EntryPoint = "sl_drift_corrector_get_tracking_data")]
-	public static extern void dllz_drift_corrector_get_tracking_data(ref TrackingData trackingData, ref Pose HMDTransform, ref Pose latencyCorrectorTransform, int hasValidTrackingPosition,bool checkDrift);
+    [DllImport(nameDll, EntryPoint = "sl_drift_corrector_get_tracking_data")]
+    public static extern void dllz_drift_corrector_get_tracking_data(ref TrackingData trackingData, ref Pose HMDTransform, ref Pose latencyCorrectorTransform, int hasValidTrackingPosition, bool checkDrift);
 
-	[DllImport(nameDll, EntryPoint = "sl_drift_corrector_set_calibration_transform")]
-	public static extern void dllz_drift_corrector_set_calibration_transform(ref Pose pose);
+    [DllImport(nameDll, EntryPoint = "sl_drift_corrector_set_calibration_transform")]
+    public static extern void dllz_drift_corrector_set_calibration_transform(ref Pose pose);
 
-	[DllImport(nameDll, EntryPoint = "sl_drift_corrector_set_calibration_const_offset_transform")]
-	public static extern void dllz_drift_corrector_set_calibration_const_offset_transform(ref Pose pose);
+    [DllImport(nameDll, EntryPoint = "sl_drift_corrector_set_calibration_const_offset_transform")]
+    public static extern void dllz_drift_corrector_set_calibration_const_offset_transform(ref Pose pose);
     #endregion
 
     /// <summary>
@@ -99,18 +99,18 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
         public Pose zedWorldTransform;
         public Pose offsetZedWorldTransform;
 
-		public int trackingState;
-	}
+        public int trackingState;
+    }
 
-	/// <summary>
-	/// Gameobject holding the camera in the final ZEDRigDisplayer rig, which captures the final images sent to both HMD screens.
-	/// </summary>
-	public GameObject finalCameraCenter;
-	/// <summary>
-	/// 'Intermediate' left camera GameObject, which is the one on the regular, always-visible ZED stereo rig (ZED_Rig_Stereo),
-	/// usually called 'Left_eye'.
-	/// </summary>
-	[Tooltip("'Intermediate' left camera GameObject, which is the one on the regular, always-visible ZED stereo rig (ZED_Rig_Stereo), "
+    /// <summary>
+    /// Gameobject holding the camera in the final ZEDRigDisplayer rig, which captures the final images sent to both HMD screens.
+    /// </summary>
+    public GameObject finalCameraCenter;
+    /// <summary>
+    /// 'Intermediate' left camera GameObject, which is the one on the regular, always-visible ZED stereo rig (ZED_Rig_Stereo),
+    /// usually called 'Left_eye'.
+    /// </summary>
+    [Tooltip("'Intermediate' left camera GameObject, which is the one on the regular, always-visible ZED stereo rig (ZED_Rig_Stereo), "
         + "usually called 'Left_eye'. ")]
     public GameObject ZEDEyeLeft;
     /// <summary>
@@ -132,29 +132,29 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
     [Tooltip("")]
     public ZEDRenderingPlane rightScreen;
 
-	/// <summary>
-	/// Final center viewing plane/canvas object in the final ZEDRigDisplayer rig. Displays the image from the center
-	/// 'intermediate' cameras (ZEDEyeRight and ZEDEyeRight) and is offset for image comfort and moved each frame for the Timewarp effect.
-	/// </summary>
-	[Tooltip("")]
-	public Transform quadCenter;
+    /// <summary>
+    /// Final center viewing plane/canvas object in the final ZEDRigDisplayer rig. Displays the image from the center
+    /// 'intermediate' cameras (ZEDEyeRight and ZEDEyeRight) and is offset for image comfort and moved each frame for the Timewarp effect.
+    /// </summary>
+    [Tooltip("")]
+    public Transform quadCenter;
 
-	/// <summary>
-	/// Camera object in 'finalCameraCenter', which captures the final image output to the headset's left and right screens.
-	/// </summary>
-	// [Tooltip("")]
-	public Camera finalCenterEye;
+    /// <summary>
+    /// Camera object in 'finalCameraCenter', which captures the final image output to the headset's left and right screens.
+    /// </summary>
+    // [Tooltip("")]
+    public Camera finalCenterEye;
 
-	/// <summary>
-	/// Material from the final center plane. Usually a new instance of Mat_ZED_Unlit.
-	/// </summary>
-	[Tooltip("Material from the final right plane. Usually a new instance of Mat_ZED_Unlit. ")]
-	public Material centerMaterial;
+    /// <summary>
+    /// Material from the final center plane. Usually a new instance of Mat_ZED_Unlit.
+    /// </summary>
+    [Tooltip("Material from the final right plane. Usually a new instance of Mat_ZED_Unlit. ")]
+    public Material centerMaterial;
 
-	/// <summary>
-	/// Base, pre-Timewarp offset between each final plane and its corresponding camera.
-	/// </summary>
-	[Tooltip("Offset between each final plane and its corresponding camera.")]
+    /// <summary>
+    /// Base, pre-Timewarp offset between each final plane and its corresponding camera.
+    /// </summary>
+    [Tooltip("Offset between each final plane and its corresponding camera.")]
     public Vector3 offset = new Vector3(0, 0, (float)sl.Constant.PLANE_DISTANCE);
 
     /// <summary>
@@ -257,38 +257,40 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
     /// </summary>
 	public static event OnHmdCalibrationChanged OnHmdCalibChanged;
 
-	/// <summary>
-	/// Cached property id for _MainTex. use the mainTexID property instead.
-	/// </summary>
-	private int? _maintexLeftid;
-	/// <summary>
-	/// Property id for _MainTex, which is the main texture from the ZED.
-	/// </summary>
-	private int mainTexLeftID
-	{
-		get
-		{
-			if (_maintexLeftid == null) _maintexLeftid = Shader.PropertyToID("_MainTexLeft");
-			return (int)_maintexLeftid;
-		}
-	}
-	/// <summary>
-	/// Cached property id for _MainTex. use the mainTexID property instead.
-	/// </summary>
-	private int? _maintexRightid;
-	/// <summary>
-	/// Property id for _MainTex, which is the main texture from the ZED.
-	/// </summary>
-	private int mainTexRightID
-	{
-		get
-		{
-			if (_maintexRightid == null) _maintexRightid = Shader.PropertyToID("_MainTexRight");
-			return (int)_maintexRightid;
-		}
-	}
+    /// <summary>
+    /// Cached property id for _MainTex. use the mainTexID property instead.
+    /// </summary>
+    private int? _maintexLeftid;
+    /// <summary>
+    /// Property id for _MainTex, which is the main texture from the ZED.
+    /// </summary>
+    private int mainTexLeftID
+    {
+        get
+        {
+            if (_maintexLeftid == null)
+                _maintexLeftid = Shader.PropertyToID("_MainTexLeft");
+            return (int) _maintexLeftid;
+        }
+    }
+    /// <summary>
+    /// Cached property id for _MainTex. use the mainTexID property instead.
+    /// </summary>
+    private int? _maintexRightid;
+    /// <summary>
+    /// Property id for _MainTex, which is the main texture from the ZED.
+    /// </summary>
+    private int mainTexRightID
+    {
+        get
+        {
+            if (_maintexRightid == null)
+                _maintexRightid = Shader.PropertyToID("_MainTexRight");
+            return (int) _maintexRightid;
+        }
+    }
 
-	List<XRNodeState> nodeStates = new List<XRNodeState>();
+    List<XRNodeState> nodeStates = new List<XRNodeState>();
 
     private bool hasXRDevice()
     {
@@ -318,7 +320,7 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
     }
 
     public GetTrackable headTrackable; // NVT Port
-	
+
     private void Awake()
     {
         //Initialize the latency tracking only if a supported headset is detected.
@@ -326,7 +328,7 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
         //dllz_latency_corrector_initialize.
         hasVRDevice = hasXRDevice();
 
-		if (hasVRDevice)
+        if (hasVRDevice)
         {
             if (getXRModelName().ToLower().Contains("vive")) //Vive or Vive Pro
             {
@@ -351,41 +353,44 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
     /// adjusts final plane scale, loads the ZED calibration offset and other misc. values.
     /// </summary>
     void Start()
-	{
-		hasVRDevice = hasXRDevice();
+    {
+        hasVRDevice = hasXRDevice();
 
 
-		//iterate until we found the ZED Manager parent...
-		Transform ObjParent = gameObject.transform;
-		int tries = 0;
-		while (manager == null && tries < 50) {
-			if (ObjParent!=null)
-				manager= ObjParent.GetComponent<ZEDManager> ();
-			if (manager == null && ObjParent!=null)
-				ObjParent = ObjParent.parent;
-			tries++;
-		}
+        //iterate until we found the ZED Manager parent...
+        Transform ObjParent = gameObject.transform;
+        int tries = 0;
+        while (manager == null && tries < 50)
+        {
+            if (ObjParent != null)
+                manager = ObjParent.GetComponent<ZEDManager>();
+            if (manager == null && ObjParent != null)
+                ObjParent = ObjParent.parent;
+            tries++;
+        }
 
-		if (manager != null) {
-			manager.OnZEDReady += ZEDReady;
-			zedCamera = manager.zedCamera;
-		} else
-			return;
+        if (manager != null)
+        {
+            manager.OnZEDReady += ZEDReady;
+            zedCamera = manager.zedCamera;
+        }
+        else
+            return;
 
-		leftScreen = ZEDEyeLeft.GetComponent<ZEDRenderingPlane>();
-		rightScreen = ZEDEyeRight.GetComponent<ZEDRenderingPlane>();
-		finalCenterEye = finalCameraCenter.GetComponent<Camera>();
-		centerMaterial = quadCenter.GetComponent<Renderer>().material;
-		finalCenterEye.SetReplacementShader(centerMaterial.shader, "");
-
-		finalCenterEye.depth = 0;
+        leftScreen = ZEDEyeLeft.GetComponent<ZEDRenderingPlane>();
+        rightScreen = ZEDEyeRight.GetComponent<ZEDRenderingPlane>();
+        finalCenterEye = finalCameraCenter.GetComponent<Camera>();
+        centerMaterial = quadCenter.GetComponent<Renderer>().material;
+        finalCenterEye.SetReplacementShader(centerMaterial.shader, "");
 
         finalCenterEye.depth = 0;
 
-		float plane_dist = (float)sl.Constant.PLANE_DISTANCE;
-		scale(quadCenter.gameObject, new Vector2(1.78f * plane_dist, 1.0f * plane_dist));
+        finalCenterEye.depth = 0;
 
-		zedReady = false;
+        float plane_dist = (float)sl.Constant.PLANE_DISTANCE;
+        scale(quadCenter.gameObject, new Vector2(1.78f * plane_dist, 1.0f * plane_dist));
+
+        zedReady = false;
 
 #if ZED_HDRP || ZED_URP
         RenderPipelineManager.beginFrameRendering += SRPStartFrame;
@@ -393,14 +398,14 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
 		Camera.onPreRender += PreRender;
 #endif
 
-		LoadHmdToZEDCalibration();
-	}
-	
-	// NVT Port
-	private void Update()
+        LoadHmdToZEDCalibration();
+    }
+
+    // NVT Port
+    private void Update()
     {
-	    finalCameraCenter.transform.position = headTrackable.GetPosition();
-	    finalCameraCenter.transform.rotation = headTrackable.GetRotation();
+        //finalCameraCenter.transform.position = headTrackable.GetPosition();
+        //finalCameraCenter.transform.rotation = headTrackable.GetRotation();
     }
 
     /// <summary>
@@ -414,28 +419,28 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
     /// <param name="zedFocal">Focal length of the ZED, retrieved from the camera's rectified calibration parameters.</param>
     /// <returns></returns>
     public Vector2 ComputeSizePlaneWithGamma(sl.Resolution resolution, float perceptionDistance, float eyeToZedDistance, float planeDistance, float HMDFocal, float zedFocal)
-	{
-		System.IntPtr p = dllz_compute_size_plane_with_gamma((int)resolution.width, (int)resolution.height, perceptionDistance, eyeToZedDistance, planeDistance, HMDFocal, zedFocal);
+    {
+        System.IntPtr p = dllz_compute_size_plane_with_gamma((int)resolution.width, (int)resolution.height, perceptionDistance, eyeToZedDistance, planeDistance, HMDFocal, zedFocal);
 
-		if (p == System.IntPtr.Zero)
-		{
-			return new Vector2();
-		}
-		Vector2 parameters = (Vector2)Marshal.PtrToStructure(p, typeof(Vector2));
-		return parameters;
+        if (p == System.IntPtr.Zero)
+        {
+            return new Vector2();
+        }
+        Vector2 parameters = (Vector2)Marshal.PtrToStructure(p, typeof(Vector2));
+        return parameters;
 
-	}
+    }
 
-	/// <summary>
-	/// Compute the focal length of the HMD.
-	/// </summary>
-	/// <param name="targetSize">Resolution of the headset's eye textures.</param>
-	/// <returns></returns>
-	public float ComputeFocal(sl.Resolution targetSize)
-	{
-		float focal_hmd = dllz_compute_hmd_focal((int)targetSize.width, (int)targetSize.height, finalCenterEye.projectionMatrix.m00, finalCenterEye.projectionMatrix.m11);
-		return focal_hmd;
-	}
+    /// <summary>
+    /// Compute the focal length of the HMD.
+    /// </summary>
+    /// <param name="targetSize">Resolution of the headset's eye textures.</param>
+    /// <returns></returns>
+    public float ComputeFocal(sl.Resolution targetSize)
+    {
+        float focal_hmd = dllz_compute_hmd_focal((int)targetSize.width, (int)targetSize.height, finalCenterEye.projectionMatrix.m00, finalCenterEye.projectionMatrix.m11);
+        return focal_hmd;
+    }
 
     /// <summary>
     /// Called once the ZED is finished initializing. Subscribed to ZEDManager.OnZEDReady in OnEnable.
@@ -443,28 +448,29 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
     /// properly in the currently-connected headset.
     /// </summary>
 	void ZEDReady()
-	{
-		Vector2 scaleFromZED;
-		halfBaselineOffset.x = zedCamera.Baseline / 2.0f;
+    {
+        Vector2 scaleFromZED;
+        halfBaselineOffset.x = zedCamera.Baseline / 2.0f;
 
-		float perception_distance = 1.0f;
-		float zed2eye_distance = 0.1f; //Estimating 10cm between your eye and physical location of the ZED Mini.
-		hasVRDevice = hasXRDevice();
-		
-		if(XRSettings.eyeTextureWidth == 0  || XRSettings.eyeTextureHeight == 0) //nvt port
+        float perception_distance = 1.0f;
+        float zed2eye_distance = 0.1f; //Estimating 10cm between your eye and physical location of the ZED Mini.
+        hasVRDevice = hasXRDevice();
+
+        if (XRSettings.eyeTextureWidth == 0 || XRSettings.eyeTextureHeight == 0) //nvt port
             Debug.LogWarning("XRSettings.eyetexture width or height is 0. Maybe XR didnt initialize correctly"); //nvt port
 
-        if(XRSettings.eyeTextureWidth == 0  || XRSettings.eyeTextureHeight == 0)
+        if (XRSettings.eyeTextureWidth == 0 || XRSettings.eyeTextureHeight == 0)
             Debug.LogWarning("XRSettings.eyetexture width or height is 0. Maybe XR didnt initialize correctly");
-        if (hasVRDevice) {
-			sl.CalibrationParameters parameters = zedCamera.CalibrationParametersRectified;
-			scaleFromZED = ComputeSizePlaneWithGamma (new sl.Resolution ((uint)zedCamera.ImageWidth, (uint)zedCamera.ImageHeight),
-				perception_distance, zed2eye_distance, offset.z,
-				ComputeFocal (new sl.Resolution ((uint)XRSettings.eyeTextureWidth, (uint)XRSettings.eyeTextureHeight)),
-				parameters.leftCam.fx);
+        if (hasVRDevice)
+        {
+            sl.CalibrationParameters parameters = zedCamera.CalibrationParametersRectified;
+            scaleFromZED = ComputeSizePlaneWithGamma(new sl.Resolution((uint) zedCamera.ImageWidth, (uint) zedCamera.ImageHeight),
+                perception_distance, zed2eye_distance, offset.z,
+                ComputeFocal(new sl.Resolution((uint) XRSettings.eyeTextureWidth, (uint) XRSettings.eyeTextureHeight)),
+                parameters.leftCam.fx);
 
-			scale(quadCenter.gameObject, scaleFromZED);
-		}
+            scale(quadCenter.gameObject, scaleFromZED);
+        }
 
         ready = false;
 
@@ -475,16 +481,16 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
             zedCamera.SetCameraSettings(sl.CAMERA_SETTINGS.SATURATION, 3);
         }
 
-		//Set eye layers to respective eyes.
-		finalCenterEye.stereoTargetEye = StereoTargetEyeMask.Both;
+        //Set eye layers to respective eyes.
+        finalCenterEye.stereoTargetEye = StereoTargetEyeMask.Both;
 
         /// AR Passtrough is recommended in 1280x720 at 60, due to FoV, FPS, etc.
         /// If not set to this resolution, warn the user.
         if (zedCamera.ImageWidth != 1280 && zedCamera.ImageHeight != 720)
             Debug.LogWarning("[ZED AR Passthrough] This resolution is not ideal for a proper AR passthrough experience. Recommended resolution is 1280x720.");
 
-		zedReady = true;
-	}
+        zedReady = true;
+    }
 
     public void OnEnable()
     {
@@ -505,35 +511,35 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
         grabSucceeded = true;
     }
 
-	/// <summary>
-	/// Collects the position of the HMD with a timestamp, to be looked up later to correct for latency.
-	/// </summary>
-	public void CollectPose()
-	{
-		if (manager == null)
-			return;
+    /// <summary>
+    /// Collects the position of the HMD with a timestamp, to be looked up later to correct for latency.
+    /// </summary>
+    public void CollectPose()
+    {
+        if (manager == null)
+            return;
 
-		KeyPose k = new KeyPose();
+        KeyPose k = new KeyPose();
 
-		// NVT Port
+        // NVT Port
 
         //InputTracking.GetNodeStates(nodeStates);
         //XRNodeState nodeState = nodeStates.Find(node => node.nodeType == XRNode.Head);
         //nodeState.TryGetRotation(out k.Orientation);
         //nodeState.TryGetPosition(out k.Translation);
-		
-		k.Orientation = headTrackable.GetRotation();
+
+        k.Orientation = headTrackable.GetRotation();
         k.Translation = headTrackable.GetPosition();
-		
+
         if (manager.zedCamera.IsCameraReady)
-		{
-			k.Timestamp = manager.zedCamera.GetCurrentTimeStamp();
-			if (k.Timestamp >= 0)
-			{
-				dllz_latency_corrector_add_key_pose(ref k.Translation, ref k.Orientation, k.Timestamp); //Poses are handled by the wrapper.
-			}
-		}
-	}
+        {
+            k.Timestamp = manager.zedCamera.GetCurrentTimeStamp();
+            if (k.Timestamp >= 0)
+            {
+                dllz_latency_corrector_add_key_pose(ref k.Translation, ref k.Orientation, k.Timestamp); //Poses are handled by the wrapper.
+            }
+        }
+    }
 
     /// <summary>
     /// Returns a pose at a specific time.
@@ -553,42 +559,42 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
     /// </summary>
     /// <param name="screen">Target GameObject to scale.</param>
     /// <param name="s">2D scale factor.</param>
-	public void scale(GameObject screen,  Vector2 s)
-	{
-		screen.transform.localScale = new Vector3(s.x, s.y, 1);
-	}
+	public void scale(GameObject screen, Vector2 s)
+    {
+        screen.transform.localScale = new Vector3(s.x, s.y, 1);
+    }
 
-	/// <summary>
-	/// Set the planes/canvases to the proper position after accounting for latency.
-	/// </summary>
-	public void UpdateRenderPlane()
-	{
-		if (manager == null)
-			return;
+    /// <summary>
+    /// Set the planes/canvases to the proper position after accounting for latency.
+    /// </summary>
+    public void UpdateRenderPlane()
+    {
+        if (manager == null)
+            return;
 
-		if (!manager.IsStereoRig)
-			return; //Make sure we're in pass-through AR mode.
+        if (!manager.IsStereoRig)
+            return; //Make sure we're in pass-through AR mode.
 
         Quaternion r;
         //r = latencyPose.rotation;
 
-        
+
         //finalCenterEye.transform.localPosition
-        
-// #if UNITY_2019_3_OR_NEWER
-//         List<InputDevice> eyes = new List<InputDevice>();
-//         InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.HeadMounted, eyes);
-//
-//         if (eyes.Count > 0) // if a headset is detected
-//         {
-//             var eye = eyes[0];
-//             eye.TryGetFeatureValue(CommonUsages.centerEyePosition, out Vector3 centerEyePosition);
-//             eye.TryGetFeatureValue(CommonUsages.centerEyeRotation, out Quaternion centerEyeRotation);
-//
-//             finalCenterEye.transform.localPosition = centerEyePosition;
-//             finalCenterEye.transform.localRotation = centerEyeRotation;
-//         }
-// #endif
+
+        // #if UNITY_2019_3_OR_NEWER
+        //         List<InputDevice> eyes = new List<InputDevice>();
+        //         InputDevices.GetDevicesWithCharacteristics(InputDeviceCharacteristics.HeadMounted, eyes);
+        //
+        //         if (eyes.Count > 0) // if a headset is detected
+        //         {
+        //             var eye = eyes[0];
+        //             eye.TryGetFeatureValue(CommonUsages.centerEyePosition, out Vector3 centerEyePosition);
+        //             eye.TryGetFeatureValue(CommonUsages.centerEyeRotation, out Quaternion centerEyeRotation);
+        //
+        //             finalCenterEye.transform.localPosition = centerEyePosition;
+        //             finalCenterEye.transform.localRotation = centerEyeRotation;
+        //         }
+        // #endif
 
         //Modified code to ensure view in HMD does not play like a movie screen
         if (manager.inputType == sl.INPUT_TYPE.INPUT_TYPE_SVO || manager.inputType == sl.INPUT_TYPE.INPUT_TYPE_STREAM)
@@ -607,27 +613,27 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
 
     }
 
-	/// <summary>
-	/// Initialize the ZED's tracking with the current HMD position and HMD-ZED calibration.
+    /// <summary>
+    /// Initialize the ZED's tracking with the current HMD position and HMD-ZED calibration.
     /// This causes the ZED's internal tracking to start where the HMD is, despite being initialized later than the HMD.
-	/// </summary>
-	/// <returns>Initial offset for the ZED's tracking. </returns>
-	public Pose InitTrackingAR()
-	{
-		if (manager == null)
-			return new Pose ();
+    /// </summary>
+    /// <returns>Initial offset for the ZED's tracking. </returns>
+    public Pose InitTrackingAR()
+    {
+        if (manager == null)
+            return new Pose();
 
         Transform tmpHMD = transform;
 
-		// NVT Port
+        // NVT Port
 
         //InputTracking.GetNodeStates(nodeStates);
         //XRNodeState nodeState = nodeStates.Find(node => node.nodeType == XRNode.Head);
         //nodeState.TryGetRotation(out Quaternion rot);
         //nodeState.TryGetPosition(out Vector3 pos);
         //Pose hmdTransform = new Pose(pos, rot);
-		
-		// tmpHMD.position = headTrackable.GetPosition();
+
+        // tmpHMD.position = headTrackable.GetPosition();
         // tmpHMD.rotation = headTrackable.GetRotation();
 
         Quaternion r = Quaternion.identity;
@@ -679,15 +685,15 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
     {
         hasVRDevice = hasXRDevice();
 
-		// NVT Port
+        // NVT Port
         //InputTracking.GetNodeStates(nodeStates);
         //XRNodeState nodeState = nodeStates.Find(node => node.nodeType == XRNode.Head);
         //nodeState.TryGetRotation(out Quaternion rot);
         //nodeState.TryGetPosition(out Vector3 pos);
         //Pose hmdTransform = new Pose(pos, rot);
-		Pose hmdTransform = new Pose(headTrackable.GetPosition(), headTrackable.GetRotation());
+        Pose hmdTransform = new Pose(headTrackable.GetPosition(), headTrackable.GetRotation());
 
-        trackingData.trackingState = (int)manager.ZEDTrackingState; //Whether the ZED's tracking is currently valid (not off or unable to localize).
+        trackingData.trackingState = (int) manager.ZEDTrackingState; //Whether the ZED's tracking is currently valid (not off or unable to localize).
         trackingData.zedPathTransform = new Pose(position, orientation);
 
         if (zedReady && latencyCorrectionReady && setimuprior == true)
@@ -715,48 +721,49 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
     /// Called from ZEDManager.LateUpdate() so that it happens each frame after other tracking processes have finished.
     /// </summary>
 	public void LateUpdateHmdRendering()
-	{
-		if (!ready) //Make sure intermediate cameras are rendering to the quad's materials.
-		{
-			if (leftScreen !=null && leftScreen.target != null && leftScreen.target.IsCreated())
-			{
+    {
+        if (!ready) //Make sure intermediate cameras are rendering to the quad's materials.
+        {
+            if (leftScreen != null && leftScreen.target != null && leftScreen.target.IsCreated())
+            {
                 centerMaterial.SetTexture(mainTexLeftID, leftScreen.target);
-				ready = true;
-			}
-			else ready = false;
-			if (rightScreen !=null && rightScreen.target != null && rightScreen.target.IsCreated())
-			{
+                ready = true;
+            }
+            else
+                ready = false;
+            if (rightScreen != null && rightScreen.target != null && rightScreen.target.IsCreated())
+            {
                 centerMaterial.SetTexture(mainTexRightID, rightScreen.target);
-				ready = true;
-			}
-			else ready = false;
-		}
+                ready = true;
+            }
+            else
+                ready = false;
+        }
 
-		if (hasVRDevice) //Do nothing if we no longer have a HMD connected.
-		{
-			CollectPose (); //File the current HMD pose into the latency poses to reference later.
-			UpdateRenderPlane(); //Reposition the final quads based on the latency pose.
-		}
-	}
+        if (hasVRDevice) //Do nothing if we no longer have a HMD connected.
+        {
+            CollectPose(); //File the current HMD pose into the latency poses to reference later.
+            UpdateRenderPlane(); //Reposition the final quads based on the latency pose.
+        }
+    }
 
 #if ZED_HDRP || ZED_URP
     private void SRPStartFrame(ScriptableRenderContext context, Camera[] cams)
     {
-        foreach(Camera cam in cams) {
+        foreach (Camera cam in cams)
+        {
             if (cam == finalCenterEye)
             {
-
                 if ((!manager.IsZEDReady && manager.IsStereoRig))
                 {
-					
-					// NVT Port
-                    System.Collections.Generic.List<XRNodeState> nodeStates = new System.Collections.Generic.List<XRNodeState>();
+                    // NVT Port
+                    //System.Collections.Generic.List<XRNodeState> nodeStates = new System.Collections.Generic.List<XRNodeState>();
                     //InputTracking.GetNodeStates(nodeStates);
                     //XRNodeState nodeState = nodeStates.Find(node => node.nodeType == XRNode.Head);
                     //nodeState.TryGetRotation(out Quaternion rot);
                     //nodeState.TryGetPosition(out Vector3 pos);
-					Quaternion rot = headTrackable.GetRotation();
-					Vector3    pos = headTrackable.GetPosition();
+                    Quaternion rot = headTrackable.GetRotation();
+                    Vector3    pos = headTrackable.GetPosition();
 
                     quadCenter.localRotation = rot;
                     quadCenter.localPosition = pos + quadCenter.localRotation * offset;
@@ -775,18 +782,17 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
 	{
         if (cam == finalCenterEye)
         {
-
             if ((!manager.IsZEDReady && manager.IsStereoRig))
             {
-				// NVT Port
-                System.Collections.Generic.List<XRNodeState> nodeStates = new System.Collections.Generic.List<XRNodeState>();
+                // NVT Port
+                //System.Collections.Generic.List<XRNodeState> nodeStates = new System.Collections.Generic.List<XRNodeState>();
                 //InputTracking.GetNodeStates(nodeStates);
                 //XRNodeState nodeState = nodeStates.Find(node => node.nodeType == XRNode.Head);
                 //nodeState.TryGetRotation(out Quaternion rot);
                 //nodeState.TryGetPosition(out Vector3 pos);
-				Quaternion rot = headTrackable.GetRotation();
-				Vector3    pos = headTrackable.GetPosition();
-				
+                Quaternion rot = headTrackable.GetRotation();
+                Vector3    pos = headTrackable.GetPosition();
+
                 quadCenter.localRotation = rot;
                 quadCenter.localPosition = pos + quadCenter.localRotation * offset;
             }
@@ -808,7 +814,6 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
             hmdtozedCalibration.translation.x = 0.0315f;//-zedCamera.Baseline/2;
             hmdtozedCalibration.translation.y = 0.0f;
             hmdtozedCalibration.translation.z = 0.11f;
-
 
             //if a calibration exists then load it
             //should be in ProgramData/stereolabs/mr/calibration.ini
@@ -841,11 +846,11 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
     /// </summary>
     /// <param name="folder"></param>
 	public void CreateFileWatcher(string folder)
-	{
-		// Create a new FileSystemWatcher and set its properties.
-		FileSystemWatcher watcher = new FileSystemWatcher();
-		watcher.Path = folder;
-		/* Watch for changes in LastAccess and LastWrite times, and
+    {
+        // Create a new FileSystemWatcher and set its properties.
+        FileSystemWatcher watcher = new FileSystemWatcher();
+        watcher.Path = folder;
+        /* Watch for changes in LastAccess and LastWrite times, and
            the renaming of files or directories. */
         watcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite
             | NotifyFilters.FileName | NotifyFilters.DirectoryName;
@@ -859,7 +864,7 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
         watcher.EnableRaisingEvents = true;
     }
 
-	/// <summary>
+    /// <summary>
     /// Reloads ZED-HMD offset calibration file and resets calibration accordintly.
     /// Also calls OnHmdCalibChanged() which ZEDManager uses to run additional reset logic.
     /// </summary>
@@ -921,7 +926,8 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
     /// <returns>False if the file couldn't be loaded, whether empty, non-existant, etc.</returns>
 	private bool ParseCalibrationFile(string path)
     {
-        if (!System.IO.File.Exists(path)) return false;
+        if (!System.IO.File.Exists(path))
+            return false;
 
         string[] lines = null;
         try

@@ -1,4 +1,4 @@
-﻿//======= Copyright (c) Stereolabs Corporation, All rights reserved. ===============
+//======= Copyright (c) Stereolabs Corporation, All rights reserved. ===============
 //Blurs with predefined kernel and weights
 Shader "ZED/ZED Blur"
 {
@@ -297,5 +297,77 @@ Shader "ZED/ZED Blur"
 			}
 				ENDCG
 			}
-	}
+
+            // NVT Port
+            // 4 - Blur based on RGB
+            Pass
+            {
+                CGPROGRAM
+#pragma vertex vert
+#pragma fragment frag
+#pragma target 4.0
+#include "UnityCG.cginc"
+
+                struct appdata
+            {
+                float4 vertex : POSITION;
+                float2 uv : TEXCOORD0;
+            };
+
+            struct v2f
+            {
+                float2 uv : TEXCOORD0;
+                float4 vertex : SV_POSITION;
+            };
+
+            sampler2D _MainTex;
+            float4 _MainTex_ST;
+
+            v2f vert(appdata v)
+            {
+                v2f o;
+                o.vertex = UnityObjectToClipPos(v.vertex);
+                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+                return o;
+            }
+            float4 _MainTex_TexelSize;
+            uniform int horizontal;
+
+            uniform float weights[5];
+            uniform float offset[5];
+            float4 frag(v2f vi) : SV_Target
+            {
+
+
+
+                float2 uv = vi.uv;
+                float3 result = tex2D(_MainTex, uv).rgb * weights[0]; // current fragment's contribution
+                int i = 0;
+                if (horizontal == 1)
+                {
+
+                        result.gbr += tex2D(_MainTex, uv + float2(offset[1] * _MainTex_TexelSize.x, 0.0)).gbr * weights[1];
+                        result.gbr += tex2D(_MainTex, uv - float2(offset[1] * _MainTex_TexelSize.x, 0.0)).gbr * weights[1];
+
+                        result.gbr += tex2D(_MainTex, uv + float2(offset[2] * _MainTex_TexelSize.x, 0.0)).gbr * weights[2];
+                        result.gbr += tex2D(_MainTex, uv - float2(offset[2] * _MainTex_TexelSize.x, 0.0)).gbr * weights[2];
+
+                }
+                else
+                {
+
+                        result.gbr += tex2D(_MainTex, uv + float2(0.0, offset[1] * _MainTex_TexelSize.y)).gbr * weights[1];
+                        result.gbr += tex2D(_MainTex, uv - float2(0.0, offset[1] * _MainTex_TexelSize.y)).gbr * weights[1];
+
+                        result.gbr += tex2D(_MainTex, uv + float2(0.0, offset[2] * _MainTex_TexelSize.y)).gbr * weights[2];
+                        result.gbr += tex2D(_MainTex, uv - float2(0.0, offset[2] * _MainTex_TexelSize.y)).gbr * weights[2];
+
+                }
+
+                return float4(result.x, result.y, result.z, 1);
+            }
+                ENDCG
+            }
+            // END NVT Port
+    }
 }

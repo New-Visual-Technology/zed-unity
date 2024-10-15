@@ -1,9 +1,10 @@
-﻿//======= Copyright (c) Stereolabs Corporation, All rights reserved. ===============
+//======= Copyright (c) Stereolabs Corporation, All rights reserved. ===============
 
-using Simteam.Events;
+using NVT.EventSystem;
 using UnityEngine;
 using UnityEditor;
-using Simteam.Events; // NVT Port
+
+
 
 /// <summary>
 /// Custom editor used by ZEDManager to extend the default panel shown in the Inspector.
@@ -59,6 +60,8 @@ public class ZEDCameraEditor : Editor
     private SerializedProperty arpostProcessingPropery;
     private SerializedProperty camBrightnessProperty;
     private SerializedProperty camBrightnessObjectProperty; // NVT Port
+    private SerializedProperty overlayCameraProperty;       // NVT Port
+    private SerializedProperty headCenterProperty;       // NVT Port
 
     //Recording Prop
     private SerializedProperty svoOutputFileNameProperty;
@@ -247,11 +250,14 @@ public class ZEDCameraEditor : Editor
 
 
         ///Rendering Serialized Properties
+        /// NVT Port
         depthOcclusionProperty      = serializedObject.FindProperty("depthOcclusion"); // NVT Port
         arpostProcessingPropery     = serializedObject.FindProperty("postProcessing"); // NVT Port
         camBrightnessProperty       = serializedObject.FindProperty("m_cameraBrightness"); // NVT Port
         camBrightnessObjectProperty = serializedObject.FindProperty("m_cameraBrightnessObject"); // NVT Port
-
+        overlayCameraProperty       = serializedObject.FindProperty("m_overlayCamera"); // NVT Port
+        headCenterProperty          = serializedObject.FindProperty("headCenter"); // NVT Port
+        /// END NVT Port
 
         ///Spatial Mapping Serialized Properties
         range = serializedObject.FindProperty("mappingRangePreset");
@@ -582,6 +588,14 @@ public class ZEDCameraEditor : Editor
         GUIContent camBrightnessObjectPropertyLabel = new GUIContent("Camera Brightness Object", "Object which holds the current camera brightness value");
         camBrightnessObjectProperty.objectReferenceValue = EditorGUILayout.ObjectField(camBrightnessObjectPropertyLabel,camBrightnessObjectProperty.objectReferenceValue, typeof(IntObject),true);
         
+        // NVT Port
+        GUIContent overlayCameraPropertyLabel = new GUIContent("Overlay Camera Object", "Object which holds the the camera for overlay, such as hud-skins, ui texts, etc ...");
+        overlayCameraProperty.objectReferenceValue = EditorGUILayout.ObjectField(overlayCameraPropertyLabel,overlayCameraProperty.objectReferenceValue, typeof(Camera),true);
+
+        // NVT Port
+        GUIContent headCenterPropertyLabel = new GUIContent("Head Center Object", "Object which defines the head center");
+        headCenterProperty.objectReferenceValue = EditorGUILayout.ObjectField(headCenterPropertyLabel, headCenterProperty.objectReferenceValue, typeof(GameObject), true);
+
         EditorGUI.indentLevel--;
 
         ///////////////////////////////////////////////////////////////

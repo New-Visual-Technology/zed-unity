@@ -1,4 +1,4 @@
-﻿//======= Copyright (c) Stereolabs Corporation, All rights reserved. ===============
+//======= Copyright (c) Stereolabs Corporation, All rights reserved. ===============
 
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -384,7 +384,6 @@ public class ZEDRenderingPlane : MonoBehaviour
         get { return renderTextureTarget; }
     }
 
-
     void Awake()
     {
         //Get the current camera and set the aspect ratio.
@@ -534,15 +533,8 @@ public class ZEDRenderingPlane : MonoBehaviour
             //mainCamera.farClipPlane = 500.0f;
             scale(canvas.gameObject, GetFOVYFromProjectionMatrix(cam.projectionMatrix));
             cam.fieldOfView = zedCamera.VerticalFieldOfView * Mathf.Rad2Deg;
-            
-            // Set same settings for cameras in stack
-            var cameraData = cam.GetUniversalAdditionalCameraData();
-            foreach (Camera subCamera in cameraData.cameraStack)
-            {
-                subCamera.fieldOfView = zedCamera.VerticalFieldOfView * Mathf.Rad2Deg;
-                subCamera.nearClipPlane = nearplane;
-                subCamera.farClipPlane = farplane;
-            }
+
+            SetOverlayCameraParameters(); // NVT Port
         }
         else //Just scale the screen.
         {
@@ -550,10 +542,27 @@ public class ZEDRenderingPlane : MonoBehaviour
         }
     }
 
+    // NVT Port
+    private void SetOverlayCameraParameters()
+    {
+        // Set same settings for cameras in stack
+        var cameraData = cam.GetUniversalAdditionalCameraData();
+
+        foreach (Camera subCamera in cameraData.cameraStack)
+        {
+            subCamera.fieldOfView = cam.fieldOfView;
+            subCamera.nearClipPlane = cam.nearClipPlane;
+            subCamera.farClipPlane = cam.farClipPlane;
+
+            subCamera.projectionMatrix = cam.projectionMatrix;
+        }
+    }
+    // END NVT Port
+
     /// <summary>
     /// Hides the canvas. Called when the ZED is disconnected via the ZEDManager.OnZEDDisconnected event.
     /// </summary>
-	void ZEDDisconnected()
+    void ZEDDisconnected()
     {
         canvas.SetActive(false);
     }
@@ -964,6 +973,12 @@ public class ZEDRenderingPlane : MonoBehaviour
                 }
                 normals = zedCamera.CreateTextureMeasureType(sl.MEASURE.NORMALS, resolution);
                 depth = zedCamera.CreateTextureMeasureType(sl.MEASURE.DEPTH, resolution);
+
+                // NVT Port
+                // This is needed for the scriptable render feature to work properly.
+                Shader.SetGlobalTexture("_CameraLeftTex", textureEye);
+                // END NVT Port
+
                 break;
             case ZED_CAMERA_SIDE.RIGHT:
             case ZED_CAMERA_SIDE.RIGHT_FORCE:
@@ -981,6 +996,12 @@ public class ZEDRenderingPlane : MonoBehaviour
                 }
                 normals = zedCamera.CreateTextureMeasureType(sl.MEASURE.NORMALS_RIGHT, resolution);
                 depth = zedCamera.CreateTextureMeasureType(sl.MEASURE.DEPTH_RIGHT, resolution);
+
+                // NVT Port
+                // This is needed for the scriptable render feature to work properly.
+                Shader.SetGlobalTexture("_CameraRightTex", textureEye);
+                // END NVT Port
+
                 break;
         }
     }
@@ -1297,6 +1318,7 @@ public class ZEDRenderingPlane : MonoBehaviour
         if (zedManager.IsZEDReady && (cam.nearClipPlane != nearplane || cam.farClipPlane != farplane))
         {
             SetProjection(nearplane, farplane); //If the camera's near/far planes changed, update the matrix.
+            SetOverlayCameraParameters(); // NVT Port
         }
 
 #if UNITY_EDITOR
@@ -1337,7 +1359,7 @@ public class ZEDRenderingPlane : MonoBehaviour
     /// </summary>
     private void SRPStartFrame(ScriptableRenderContext context, Camera[] rendcam)
     {
-        foreach(Camera camera in rendcam)
+        foreach (Camera camera in rendcam)
         {
             if (camera == renderingCam && zedManager.GetSpatialMapping.display)
             {
@@ -1346,6 +1368,7 @@ public class ZEDRenderingPlane : MonoBehaviour
         }
 
     }
+
     /// <summary>
     /// Draw every chunk of the wiremesh
     /// </summary>
@@ -1469,13 +1492,6 @@ public class ZEDRenderingPlane : MonoBehaviour
         newmat[2, 2] = -(far + near) / (far - near);
         newmat[2, 3] = -(2.0f * far * near) / (far - near);
         cam.projectionMatrix = newmat;
-        
-        var cameraData = cam.GetUniversalAdditionalCameraData();
-        foreach (Camera subCamera in cameraData.cameraStack)
-        {
-            subCamera.projectionMatrix = newmat;
-        }
-
 
         nearplane = near;
         farplane = far;

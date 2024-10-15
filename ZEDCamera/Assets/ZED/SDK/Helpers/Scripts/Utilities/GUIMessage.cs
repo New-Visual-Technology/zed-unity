@@ -1,5 +1,6 @@
 ﻿//======= Copyright (c) Stereolabs Corporation, All rights reserved. ===============
 
+using System.Collections;
 using UnityEngine;
 using UnityEngine.XR;
 
@@ -115,7 +116,10 @@ public class GUIMessage : MonoBehaviour
             }
 
             warningmono.GetComponent<Canvas>().worldCamera = highestdepthzedcam;
-
+            warningmono.GetComponent<Canvas>().planeDistance = 0.31f;
+            
+            warningmono.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
+            
             textmono = warningmono.GetComponentInChildren<UnityEngine.UI.Text>();
             textmono.color = Color.white;
 
@@ -133,21 +137,28 @@ public class GUIMessage : MonoBehaviour
             warningleft = Instantiate(Resources.Load("PrefabsUI/Warning_VR") as GameObject, zedManager.GetLeftCameraTransform());
             warningleft.SetActive(true);
             warningleft.GetComponent<Canvas>().worldCamera = zedManager.GetLeftCamera();
-            warningleft.GetComponent<Canvas>().planeDistance = 1;
-            textleft = warningleft.GetComponentInChildren<UnityEngine.UI.Text>();
+            warningleft.GetComponent<Canvas>().planeDistance = 0.31f;
+            
+            warningleft.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
+
+            textleft = warningleft.GetComponentInChildren<UnityEngine.UI.Text>(true);
             textleft.color = Color.white;
             imageleft = warningleft.transform.GetChild(0).GetChild(1).gameObject;
-            imageleft.transform.parent.gameObject.SetActive(true);
+            //imageleft.transform.parent.gameObject.SetActive(true);
 
             //Instantiate the right warning prefab and set basic settings for it.
             warningright = Instantiate(Resources.Load("PrefabsUI/Warning_VR") as GameObject, zedManager.GetRightCameraTransform());
             warningright.SetActive(true);
             warningright.GetComponent<Canvas>().worldCamera = zedManager.GetRightCamera();
-            warningright.GetComponent<Canvas>().planeDistance = 1;
-            textright = warningright.GetComponentInChildren<UnityEngine.UI.Text>();
+            warningright.GetComponent<Canvas>().planeDistance = 0.31f;
+            
+            warningright.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
+            
+            
+            textright = warningright.GetComponentInChildren<UnityEngine.UI.Text>(true);
             textright.color = Color.white;
             imageright = warningright.transform.GetChild(0).GetChild(1).gameObject;
-            imageright.transform.parent.gameObject.SetActive(true);
+            //imageright.transform.parent.gameObject.SetActive(true);
 
             if (!sl.ZEDCamera.CheckPlugin()) //Warn the use there's no SDK installed. 
             {
@@ -199,16 +210,15 @@ public class GUIMessage : MonoBehaviour
         {
             warningleft.SetActive(true);
             imageleft.SetActive(true);
-            warningleft.transform.GetChild(0).gameObject.SetActive(true);
             textleft.text = ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.ZED_IS_DISCONNECETD);
             warningleft.layer = 30;
 
             warningright.SetActive(true);
             imageright.SetActive(true);
-            warningright.transform.GetChild(0).gameObject.SetActive(true);
             textright.text = ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.ZED_IS_DISCONNECETD);
             warningright.layer = 30;
 
+            EnableWarningVRPanel();
             ready = false;
         }
     }
@@ -290,6 +300,7 @@ public class GUIMessage : MonoBehaviour
                 }
                 else if (textleft)
                 {
+                    EnableWarningVRPanel();
                     textleft.text = ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.UNABLE_TO_OPEN_CAMERA);
                     textright.text = ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.UNABLE_TO_OPEN_CAMERA);
                 }
@@ -302,6 +313,7 @@ public class GUIMessage : MonoBehaviour
                 }
                 else if (textleft)
                 {
+                    EnableWarningVRPanel();
                     textleft.text = ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.CAMERA_DETECTION_ISSUE);
                     textright.text = ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.CAMERA_DETECTION_ISSUE);
                 }
@@ -314,6 +326,7 @@ public class GUIMessage : MonoBehaviour
                 }
                 else if (textleft)
                 {
+                    EnableWarningVRPanel();
                     textleft.text = ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.SENSOR_NOT_DETECTED);
                     textright.text = ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.SENSOR_NOT_DETECTED);
                 }
@@ -326,6 +339,7 @@ public class GUIMessage : MonoBehaviour
                 }
                 else if (textleft)
                 {
+                    EnableWarningVRPanel();
                     textleft.text = ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.LOW_USB_BANDWIDTH);
                     textright.text = ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.LOW_USB_BANDWIDTH);
                 }
@@ -338,6 +352,7 @@ public class GUIMessage : MonoBehaviour
                 }
                 else if (textleft)
                 {
+                    EnableWarningVRPanel();
                     textleft.text = "Invalid SVO File/Path";
                     textright.text = "Invalid SVO File/Path";
                 }
@@ -350,6 +365,7 @@ public class GUIMessage : MonoBehaviour
                 }
                 else if (textleft)
                 {
+                    EnableWarningVRPanel();
                     textleft.text = "Invalid Calibration file";
                     textright.text = "Invalid Calibration file";
                 }
@@ -362,6 +378,7 @@ public class GUIMessage : MonoBehaviour
                 }
                 else if (textleft)
                 {
+                    EnableWarningVRPanel();
                     textleft.text = ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.CAMERA_NOT_INITIALIZED);
                     textright.text = ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.CAMERA_NOT_INITIALIZED);
                 }
@@ -398,6 +415,12 @@ public class GUIMessage : MonoBehaviour
             }
         }
 
+    }
+
+    private void EnableWarningVRPanel()
+    {
+        warningright.transform.GetChild(0).gameObject.SetActive(true);
+        warningleft.transform.GetChild(0).gameObject.SetActive(true);
     }
 
     /// <summary>
