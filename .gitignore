@@ -4,6 +4,7 @@
 [Bb]uild/
 [Bb]uilds/
 Assets/AssetStoreTools*
+unity-wrapper/
 
 # Visual Studio cache directory
 .vs/
@@ -34,13 +35,12 @@ sysinfo.txt
 *.apk
 *.unitypackage
 
-
-# Ignore: name DOT meta
-*.meta
-# Include: name DOT extension DOT meta
-!*.*.meta
-
 ZEDCamera/Assets/SteamVR/
 ZEDCamera/Assets/Oculus/
-ZEDCamera/ProjectSettings/
 ZEDCamera/Assets/Benjamin
+ZEDCamera/Assets/LocalTests/
+ZEDCamera/Assets/LocalTest/
+
+ZEDCamera/Logs/
+ZEDCamera/UserSettings/
+ZEDCamera/.vsconfig
