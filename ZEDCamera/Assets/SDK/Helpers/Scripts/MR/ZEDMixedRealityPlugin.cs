@@ -6,7 +6,9 @@ using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.XR;
+#if USING_FVW
 using FVW.Modules.Tracking; // NVT Port
+#endif
 
 /// <summary>
 /// In pass-through AR mode, handles the final output to the VR headset, positioning the final images
@@ -314,7 +316,9 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
         return XRSettings.loadedDeviceName;
     }
 
+    #if USING_FVW
     public GetTrackable headTrackable; // NVT Port
+    #endif
 
     private void Awake()
     {
@@ -508,8 +512,10 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
         //nodeState.TryGetRotation(out k.Orientation);
         //nodeState.TryGetPosition(out k.Translation);
 
+        #if USING_FVW
         k.Orientation = headTrackable.GetRotation();
         k.Translation = headTrackable.GetPosition();
+        #endif
 
         if (manager.zedCamera.IsCameraReady)
         {
@@ -594,7 +600,7 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
 #endif
     }
 
-    }
+    
 
     /// <summary>
     /// Initialize the ZED's tracking with the current HMD position and HMD-ZED calibration.
@@ -674,7 +680,11 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
         //nodeState.TryGetRotation(out Quaternion rot);
         //nodeState.TryGetPosition(out Vector3 pos);
         //Pose hmdTransform = new Pose(pos, rot);
+        #if USING_FVW
         Pose hmdTransform = new Pose(headTrackable.GetPosition(), headTrackable.GetRotation());
+        #else
+        Pose hmdTransform = new Pose(Vector3.zero, Quaternion.identity);
+        #endif
 
         trackingData.trackingState = (int) manager.ZEDTrackingState; //Whether the ZED's tracking is currently valid (not off or unable to localize).
         trackingData.zedPathTransform = new Pose(position, orientation);
@@ -778,8 +788,13 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
                 //XRNodeState nodeState = nodeStates.Find(node => node.nodeType == XRNode.Head);
                 //nodeState.TryGetRotation(out Quaternion rot);
                 //nodeState.TryGetPosition(out Vector3 pos);
+#if USING_FVW
                 Quaternion rot = headTrackable.GetRotation();
                 Vector3    pos = headTrackable.GetPosition();
+#else
+                Quaternion rot = Quaternion.identity;
+                Vector3 pos = Vector3.zero;
+#endif
 
                 quadCenter.localRotation = rot;
                 quadCenter.localPosition = pos + quadCenter.localRotation * offset;

@@ -4,16 +4,18 @@ using System.Threading;
 using UnityEngine.XR;
 using System.Collections;
 using System.Collections.Generic;
-using FVW.Events;
-using FVW.JsonSerializables.UserSettingsDataObject;
-using UnityEditor;
 using sl;
 
 // NVT Port
+#if USING_FVW
 using FVW.Modules.Tracking;
 using NVT.EventSystem;
-using sl;
-using UnityEngine.Rendering.Universal;
+using FVW.Events;
+using FVW.JsonSerializables.UserSettingsDataObject;
+UnityEngine.Rendering.Universal
+#endif
+
+
 
 
 #if UNITY_EDITOR
@@ -29,7 +31,11 @@ using UnityEditor;
 /// ZEDManager is attached to the root objects in the ZED_Rig_Mono and ZED_Rig_Stereo prefabs.
 /// If using ZED_Rig_Stereo, it will set isStereoRig to true, which triggers several behaviors unique to stereo pass-through AR.
 /// </remarks>
+
+#if USING_FVW
 public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
+#else
+public class ZEDManager : MonoBehaviour
 {
     /// <summary>
     /// Static function to get instance of the ZEDManager with a given camera_ID. See sl.ZED_CAMERA_ID for the available choices.
@@ -484,8 +490,7 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
     /// </summary>
     [HideInInspector]
     public float objectDetectionPredictionTimeout = 0.2f;
-
-    [HideInInspector] public sl.BODY_FORMAT bodyFormat = sl.BODY_FORMAT.POSE_34;
+    
 
     /// <summary>
     /// Allow inference to run at a lower precision to improve runtime and memory usage, 
@@ -880,7 +885,9 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
         }
     }
 
+    #if USING_FVW
     [SerializeField] [HideInInspector] private IntObject m_cameraBrightnessObject = null;   // NVT Port
+    #endif
     [SerializeField] [HideInInspector] private Camera m_overlayCamera = null;               // NVT Port
     [SerializeField] [HideInInspector] private GameObject headCenter = null;                // NVT Port
 
@@ -1733,24 +1740,11 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
     [SerializeField]
     [HideInInspector]
     private bool advancedPanelOpen = false;
-    [SerializeField]
-    [HideInInspector]
-    private bool spatialMappingFoldoutOpen = false;
-    [SerializeField]
-    [HideInInspector]
-    private bool objectDetectionFoldoutOpen = false;
+
     [SerializeField]
     [HideInInspector]
     private bool bodyTrackingFoldoutOpen = false;
-    [SerializeField]
-    [HideInInspector]
-    private bool recordingFoldoutOpen = false;
-    [SerializeField]
-    [HideInInspector]
-    private bool streamingOutFoldoutOpen = false;
-    [SerializeField]
-    [HideInInspector]
-    private bool camControlFoldoutOpen = false;
+
 
     [SerializeField] [HideInInspector] private bool spatialMappingFoldoutOpen = false;
     [SerializeField] [HideInInspector] private bool objectDetectionFoldoutOpen = false;
@@ -2953,8 +2947,10 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
     /// </summary>
     private void OnCameraBrightnessChanged()
     {
+#if USING_FVW
         if (m_cameraBrightnessObject != null)
             CameraBrightness = m_cameraBrightnessObject.Value;
+#endif
     }
 
 
@@ -3372,7 +3368,7 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
         }
     }
 
-    #endregion
+
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////// BODY TRACKING REGION  ////////////////////////////////////////////////////////////////////////////////
@@ -3581,7 +3577,7 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
 
     #endregion
 
-#endregion
+
 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3611,7 +3607,9 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
         zedRigDisplayer = new GameObject("ZEDRigDisplayer");
         arRig = zedRigDisplayer.AddComponent<ZEDMixedRealityPlugin>();
 
+#if USING_FVW
         arRig.headTrackable = GetComponent<GetTrackable>(); // NVT Port
+#endif
 
         /* Screen */
         GameObject centerScreen = GameObject.CreatePrimitive(PrimitiveType.Quad);
@@ -3640,9 +3638,11 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
         cam.depth = camRightTransform.GetComponent<Camera>().depth;
 
         // NVT Port (with reference "UnityEngine.Rendering.Universal")
+#if USING_FVW
         var cameraData = cam.GetUniversalAdditionalCameraData();
         if (m_overlayCamera)
             cameraData.cameraStack.Add(m_overlayCamera);
+#endif
 
         XRDevice.DisableAutoXRCameraTracking(cam, true); // NVT Port
 
@@ -3805,7 +3805,7 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
 #endif
         }
     }
-
+#endregion
     public void InitVideoSettings(VideoSettingsInitMode mode)
     {
         if (!zedCamera.IsCameraReady)
@@ -4050,7 +4050,7 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
         }
     }
 #endif
-
+    #if USING_FVW
     public void SetResolution(NVT.EventSystem.Object res)
     {
         CameraResolution currentRes = res.Cast<ResolutionObject>().Value;
@@ -4089,21 +4089,24 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
         // Debug.Log("Resolution: " + resolution);
         // Debug.Log(FPS);
     }
+#endif
 
 
 #region Event Listener
 
     // NVT Port
-
+#if USING_FVW
     public void OnEnable() => m_cameraBrightnessObject?.Event.RegisterListener(this);
 
     public void OnDisable() => m_cameraBrightnessObject?.Event.UnregisterListener(this);
 
+   
     public void OnEventRaised(NVT.EventSystem.Object evtObj, IEvent sender)
     {
         if (evtObj == m_cameraBrightnessObject)
             OnCameraBrightnessChanged();
     }
+    #endif
 
     public UnityEngine.Object GetObject() => this;
 
@@ -4111,3 +4114,4 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
 
 #endregion
 }
+#endif

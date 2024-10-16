@@ -2,7 +2,9 @@ using UnityEngine;
 
 using sl;
 
+#if USING_FVW
 using NVT.EventSystem;
+#endif
 
 /// <summary>
 /// Calculates the brightness of the left ZED camera grayscale image.
@@ -29,8 +31,10 @@ public class CameraBrightnessManager : MonoBehaviour
     [Range(1, 2000)]
     private int sampleInterval = 1;
 
+#if USING_FVW
     [SerializeField]
     private IntObject cameraBrightnessObject = null;
+#endif
 
     private int cameraBrightness = 0;
     /// <summary>
@@ -45,9 +49,10 @@ public class CameraBrightnessManager : MonoBehaviour
                 return;
 
             cameraBrightness = value;
-
+#if USING_FVW
             if (cameraBrightnessObject != null)
                 cameraBrightnessObject.Value = cameraBrightness;
+#endif
         }
     }
 

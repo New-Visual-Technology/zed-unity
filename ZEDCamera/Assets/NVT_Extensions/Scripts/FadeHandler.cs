@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+#if USING_FVW
 using FVW.Utility;
+#endif
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -43,7 +45,9 @@ namespace FVW.InteractionSystem
         private string fadeOutAnimName = "fadeOut_loading_text_fadeOut";
         private string fadeInAnimName = "fadeOut_loading_text_fadeIn";
 
+#if USING_FVW
         private List<CastRaycastFromObject> activeRaycasts = new();
+#endif
         protected void Start()
         {
             zedManager = FindObjectOfType<ZEDManager>(true);
@@ -130,6 +134,7 @@ namespace FVW.InteractionSystem
 
         private void EnableRaycasts(bool enable)
         {
+#if USING_FVW
             // make sure only originally active raycasts are later activated/deactivated
             if (!enable && activeRaycasts.Capacity == 0)
             {
@@ -143,6 +148,7 @@ namespace FVW.InteractionSystem
             {
                 raycast.gameObject.SetActive(enable);
             }
+#endif
         }
 
         public async Task Fade(bool fadeIn, int fadeDurationInMiliseconds = 500)

@@ -1,6 +1,7 @@
 //======= Copyright (c) Stereolabs Corporation, All rights reserved. ===============
-
+#if USING_FVW
 using NVT.EventSystem;
+#endif
 using UnityEngine;
 using UnityEditor;
 
@@ -637,6 +638,7 @@ public class ZEDCameraEditor : Editor
         "This is a rendering setting that doesn't affect the raw input from the camera.");
         camBrightnessProperty.intValue = EditorGUILayout.IntSlider(camBrightnessPropertyLabel, camBrightnessProperty.intValue, 0, 100);
 
+#if USING_FVW
 		// NVT Port
         GUIContent camBrightnessObjectPropertyLabel = new GUIContent("Camera Brightness Object", "Object which holds the current camera brightness value");
         camBrightnessObjectProperty.objectReferenceValue = EditorGUILayout.ObjectField(camBrightnessObjectPropertyLabel,camBrightnessObjectProperty.objectReferenceValue, typeof(IntObject),true);
@@ -648,6 +650,7 @@ public class ZEDCameraEditor : Editor
         // NVT Port
         GUIContent headCenterPropertyLabel = new GUIContent("Head Center Object", "Object which defines the head center");
         headCenterProperty.objectReferenceValue = EditorGUILayout.ObjectField(headCenterPropertyLabel, headCenterProperty.objectReferenceValue, typeof(GameObject), true);
+#endif
 
         EditorGUI.indentLevel--;
 
@@ -1305,17 +1308,7 @@ public class ZEDCameraEditor : Editor
             GUILayout.Space(5);
 
             EditorGUI.indentLevel++;
-
-            GUIContent depthOcclusionPropertyLabel = new GUIContent("Depth Occlusion", "When enabled, the real world can occlude (cover up) virtual objects that are behind it. " +
-            "Otherwise, virtual objects will appear in front.");
-            depthOcclusionProperty.boolValue = EditorGUILayout.Toggle(depthOcclusionPropertyLabel, depthOcclusionProperty.boolValue);
-
-            GUIContent arpostProcessingProperyLabel = new GUIContent("AR Post-Processing", "Enables post-processing effects on virtual objects that blends them in with the real world.");
-            arpostProcessingPropery.boolValue = EditorGUILayout.Toggle(arpostProcessingProperyLabel, arpostProcessingPropery.boolValue);
-
-            GUIContent camBrightnessPropertyLabel = new GUIContent("Camera Brightness", "Brightness of the final real-world image. Default is 100. Lower to darken the environment in a realistic-looking way. " +
-            "This is a rendering setting that doesn't affect the raw input from the camera.");
-            camBrightnessProperty.intValue = EditorGUILayout.IntSlider(camBrightnessPropertyLabel, camBrightnessProperty.intValue, 0, 100);
+            
 
             //Style for the AR layer box. 
             GUIStyle layerboxstyle = new GUIStyle(EditorStyles.numberField);

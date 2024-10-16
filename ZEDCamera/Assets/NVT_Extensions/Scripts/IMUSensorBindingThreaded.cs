@@ -1,15 +1,19 @@
 using System.Threading;
+#if USING_FVW
 using FVW.Events;
 using FVW.Utility.Unity;
+#endif
 using sl;
 using UnityEngine;
 
 public class IMUSensorBindingThreaded : MonoBehaviour
 {
     [SerializeField] private ZEDManager zedManager;
+#if USING_FVW
     [SerializeField] private IMUSensorDataObject imuSensorDataObject;
     [SerializeField] private WeldingObjectVector3Buffered gravityDirection;
     [SerializeField] private WeldingObjectQuaternionBuffered fusedOrientation;
+#endif
 
     private SensorsData sensors_data;
     private ulong last_imu_timestamp = 0;
@@ -58,6 +62,7 @@ public class IMUSensorBindingThreaded : MonoBehaviour
         {
             if (zedManager != null && zedManager.zedCamera != null)
             {
+#if USING_FVW
                 if (!zedManager.running)
                 {
                     if (imuSensorDataObject.Running)
@@ -97,6 +102,7 @@ public class IMUSensorBindingThreaded : MonoBehaviour
                         last_imu_timestamp = sensors_data.imu.timestamp;
                     }
                 }
+#endif
             }
 
             Thread.Sleep(frameTime_msec);

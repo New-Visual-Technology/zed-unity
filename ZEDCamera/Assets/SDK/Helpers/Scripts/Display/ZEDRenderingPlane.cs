@@ -2,7 +2,6 @@
 
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
 
 /// <summary>
 /// Responsible for actually mixing the real and virtual images, and displaying them in a
@@ -547,6 +546,7 @@ public class ZEDRenderingPlane : MonoBehaviour
     // NVT Port
     private void SetOverlayCameraParameters()
     {
+        #if USING_FVW
         // Set same settings for cameras in stack
         var cameraData = cam.GetUniversalAdditionalCameraData();
 
@@ -558,6 +558,7 @@ public class ZEDRenderingPlane : MonoBehaviour
 
             subCamera.projectionMatrix = cam.projectionMatrix;
         }
+#endif
     }
     // END NVT Port
 

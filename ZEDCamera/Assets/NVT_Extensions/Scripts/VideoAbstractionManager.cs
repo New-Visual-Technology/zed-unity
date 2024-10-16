@@ -1,7 +1,9 @@
 using UnityEngine;
+#if USING_FVW
 using NVT.EventSystem;
 using FVW.Events;
 using FVW.JsonSerializables.UserSettingsDataObject;
+#endif
 using System;
 
 #if ZED_HDRP || ZED_URP
@@ -12,7 +14,11 @@ using UnityEngine.Rendering;
 /// When attached to an object that also has a ZEDRenderingPlane, applies an effect on the camera image for
 /// abstraction purposes.
 /// </summary>
+#if USING_FVW
 public class VideoAbstractionManager : MonoBehaviour, IEventListener
+#else
+public class VideoAbstractionManager : MonoBehaviour
+#endif
 {
     /// <summary>
     /// The plane used for rendering. Equal to the canvas value of ZEDRenderingPlane. 
@@ -145,8 +151,9 @@ public class VideoAbstractionManager : MonoBehaviour, IEventListener
     // [SerializeField]
     // [Tooltip("Event to register with.")]
     // private ValueChangedEvent abstractionChanged;
-
+#if USING_FVW
     [SerializeField] private AbstractionObject abstractionObject;
+#endif
 
     public void OnEnable()
     {
@@ -158,13 +165,14 @@ public class VideoAbstractionManager : MonoBehaviour, IEventListener
 
         screenManager = GetComponent<ZEDRenderingPlane>();
         cameraManager.OnZEDReady += ZEDReady;
-
+#if USING_FVW
         if (abstractionObject.Event != null)
         {
             abstractionObject.Event.RegisterListener(this);
         }
 
         abstractionMode = (int)MapAbstraction(abstractionObject.Value);
+#endif
     }
 
     public void OnDisable()
@@ -173,11 +181,12 @@ public class VideoAbstractionManager : MonoBehaviour, IEventListener
         {
             cameraManager.OnZEDReady -= ZEDReady;
         }
-
+#if USING_FVW
         if (abstractionObject.Event != null)
         {
             abstractionObject.Event.UnregisterListener(this);
         }
+#endif
     }
 
     private void OnDestroy()
@@ -208,9 +217,10 @@ public class VideoAbstractionManager : MonoBehaviour, IEventListener
 
         RenderPipelineManager.beginCameraRendering += OnSRPPreRender;
 #endif
-
+#if USING_FVW
         // Set default value
         abstractionMode = (int) MapAbstraction(Abstraction.Greyscale);
+#endif
     }
 
     public UnityEngine.Object GetObject()
@@ -218,6 +228,7 @@ public class VideoAbstractionManager : MonoBehaviour, IEventListener
         throw new System.NotImplementedException();
     }
 
+#if USING_FVW
     public void OnEventRaised(NVT.EventSystem.Object evtObj, IEvent sender)
     {
         if (sender.Equals(abstractionObject.Event))
@@ -225,6 +236,7 @@ public class VideoAbstractionManager : MonoBehaviour, IEventListener
             abstractionMode = (int) MapAbstraction(((AbstractionObject) evtObj).Value);
         }
     }
+#endif
 
     /// <summary>
     /// Initialization logic that must be done after the ZED camera has finished initializing. 
@@ -362,6 +374,7 @@ public class VideoAbstractionManager : MonoBehaviour, IEventListener
         GrayscaleEdgesAddedToGrayscale = 6
     }
 
+#if USING_FVW
     private VideoProcessing MapAbstraction(Abstraction abstraction)
     {
         return abstraction switch
@@ -377,4 +390,5 @@ public class VideoAbstractionManager : MonoBehaviour, IEventListener
             _ => throw new Exception($"Abstraction not set correctly. Value was {abstraction}")
         };
     }
+#endif
 }
