@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:ZEDCamera/Assets/Samples~/Body Tracking/Models/Textures_Unity/Armature_Legs_AlbedoTransparency.tif.meta
+guid: 9c7cc78541f523d4e818edc78ff6ba7e
+========
 guid: 46f00e0b9a66dfa44949f3f2b813cc3b
+>>>>>>>> master:ZEDCamera/Assets/Samples~/Body Tracking/Models/Textures_Unity/Armature_Body_MetallicSmoothness.tif.meta
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}

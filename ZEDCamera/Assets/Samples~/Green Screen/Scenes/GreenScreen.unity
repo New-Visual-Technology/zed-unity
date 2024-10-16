@@ -374,16 +374,6 @@ PrefabInstance:
       propertyPath: depthMode
       value: 3
       objectReference: {fileID: 0}
-    - target: {fileID: 23631011804935366, guid: 802145764afddb545a3f8d0b72a5f8a3,
-        type: 3}
-      propertyPath: m_Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 2100000, guid: 6e929c57283b2f34a923684f776605fa, type: 2}
-    - target: {fileID: 114744244247048828, guid: 802145764afddb545a3f8d0b72a5f8a3,
-        type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 802145764afddb545a3f8d0b72a5f8a3, type: 3}
 --- !u!1 &919328712

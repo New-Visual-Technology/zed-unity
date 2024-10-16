@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:ZEDCamera/Assets/ZED_NVT_Port_Version.md.meta
+guid: fbb35d571c6e1d0439d414cb8f8cd60a
+========
 guid: 0443d65976e849b4686185599910374f
+>>>>>>>> master:ZEDCamera/Assets/package.json.meta
 TextScriptImporter:
   externalObjects: {}
   userData: 

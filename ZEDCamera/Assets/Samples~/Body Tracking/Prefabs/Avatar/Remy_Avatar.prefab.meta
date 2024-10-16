@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:ZEDCamera/Assets/SDK/Helpers/Resources/PrefabsUI/BlackOverlay.prefab.meta
+guid: 9dfbdf1961b565242b61f2ad2932e780
+========
 guid: 78d7f1109281c7a4ca0cf832618b36c6
+>>>>>>>> master:ZEDCamera/Assets/Samples~/Body Tracking/Prefabs/Avatar/Remy_Avatar.prefab.meta
 PrefabImporter:
   externalObjects: {}
   userData: 
