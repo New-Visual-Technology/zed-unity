@@ -38,7 +38,6 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
 public class ZEDManager : MonoBehaviour
 #endif
 {
-#endif
     /// <summary>
     /// Static function to get instance of the ZEDManager with a given camera_ID. See sl.ZED_CAMERA_ID for the available choices.
     /// </summary>
