@@ -3,6 +3,11 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
+#if USING_FVW
+using UnityEngine.Rendering.Universal;
+#endif
+
+
 /// <summary>
 /// Responsible for actually mixing the real and virtual images, and displaying them in a
 /// Frame object within the camera rig.
