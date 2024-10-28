@@ -724,6 +724,7 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
         {
             CollectPose(); //File the current HMD pose into the latency poses to reference later.
             UpdateRenderPlane(); //Reposition the final quads based on the latency pose.
+            
         }
     }
 
@@ -742,8 +743,13 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
                     //XRNodeState nodeState = nodeStates.Find(node => node.nodeType == XRNode.Head);
                     //nodeState.TryGetRotation(out Quaternion rot);
                     //nodeState.TryGetPosition(out Vector3 pos);
+#if USING_FVW
                     Quaternion rot = headTrackable.GetRotation();
                     Vector3    pos = headTrackable.GetPosition();
+#else
+                    Quaternion rot = Quaternion.identity;
+                    Vector3    pos = Vector3.zero;
+#endif
 
 #if NEW_TRANSFORM_API
                     quadCenter.SetLocalPositionAndRotation(pos + quadCenter.localRotation * offset, rot);

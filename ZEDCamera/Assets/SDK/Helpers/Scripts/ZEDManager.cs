@@ -12,7 +12,7 @@ using FVW.Modules.Tracking;
 using NVT.EventSystem;
 using FVW.Events;
 using FVW.JsonSerializables.UserSettingsDataObject;
-UnityEngine.Rendering.Universal
+using UnityEngine.Rendering.Universal;
 #endif
 
 
@@ -36,6 +36,7 @@ using UnityEditor;
 public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
 #else
 public class ZEDManager : MonoBehaviour
+#endif
 {
     /// <summary>
     /// Static function to get instance of the ZEDManager with a given camera_ID. See sl.ZED_CAMERA_ID for the available choices.
@@ -62,8 +63,7 @@ public class ZEDManager : MonoBehaviour
     {
         List<ZEDManager> instances = new List<ZEDManager>();
         for (int i = 0; i < (int) sl.Constant.MAX_CAMERA_PLUGIN; i++)
-        {
-            ZEDManager instance = GetInstance((sl.ZED_CAMERA_ID) i);
+        { ZEDManager instance = GetInstance((sl.ZED_CAMERA_ID) i);
             if (instance != null)
                 instances.Add(instance);
         }
@@ -4112,4 +4112,3 @@ public class ZEDManager : MonoBehaviour
 
 #endregion
 }
-#endif
