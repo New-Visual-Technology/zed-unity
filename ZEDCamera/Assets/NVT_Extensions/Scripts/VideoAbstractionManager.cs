@@ -16,10 +16,12 @@ using UnityEngine.Rendering;
 /// </summary>
 #if USING_FVW
 public class VideoAbstractionManager : MonoBehaviour, IEventListener
+{
 #else
 public class VideoAbstractionManager : MonoBehaviour
-#endif
 {
+#endif
+
     /// <summary>
     /// The plane used for rendering. Equal to the canvas value of ZEDRenderingPlane. 
     /// </summary>
