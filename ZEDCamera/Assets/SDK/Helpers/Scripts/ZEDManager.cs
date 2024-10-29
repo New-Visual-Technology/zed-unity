@@ -677,6 +677,8 @@ public class ZEDManager : MonoBehaviour
 
     private sl.ObjectDetectionRuntimeParameters objectDetectionRuntimeParameters = new sl.ObjectDetectionRuntimeParameters();
 
+    public sl.CustomObjectDetectionRuntimeParameters customObjectDetectionRuntimeParameters = new sl.CustomObjectDetectionRuntimeParameters();
+
     [HideInInspector]
     public List<CustomBoxObjectData> customObjects = new List<CustomBoxObjectData>();
 
@@ -1935,7 +1937,7 @@ public class ZEDManager : MonoBehaviour
                 isStereoRig = true;
 
                 List<XRInputSubsystem> subsystems = new List<XRInputSubsystem>();
-                SubsystemManager.GetInstances<XRInputSubsystem>(subsystems);
+                SubsystemManager.GetSubsystems<XRInputSubsystem>(subsystems);
                 for (int i = 0; i < subsystems.Count; i++)
                 {
                      subsystems[i].TrySetTrackingOriginMode(TrackingOriginModeFlags.Device);
@@ -3346,7 +3348,18 @@ public class ZEDManager : MonoBehaviour
     {
         sl.Objects objsbuffer = new sl.Objects();
 
-        sl.ERROR_CODE res = zedCamera.RetrieveObjects(ref objectDetectionRuntimeParameters, ref objsbuffer, objectDetectionInstanceID);
+        sl.ERROR_CODE res = sl.ERROR_CODE.FAILURE;
+        
+        if (objectDetectionModel == sl.OBJECT_DETECTION_MODEL.CUSTOM_BOX_OBJECTS)
+        {
+            customObjectDetectionRuntimeParameters.objectClassDetectionProperties = new List<CustomObjectDetectionProperties>();
+            customObjectDetectionRuntimeParameters.objectDetectionProperties = new CustomObjectDetectionProperties();
+            res = zedCamera.RetrieveObjects(ref customObjectDetectionRuntimeParameters, ref objsbuffer, objectDetectionInstanceID);
+        }
+        else
+        {
+            res = zedCamera.RetrieveObjects(ref objectDetectionRuntimeParameters, ref objsbuffer, objectDetectionInstanceID);
+        }
 
         if (res == sl.ERROR_CODE.SUCCESS && objsbuffer.isNew != 0)
         {
