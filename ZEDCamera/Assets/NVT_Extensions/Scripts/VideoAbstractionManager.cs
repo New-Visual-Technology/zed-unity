@@ -1,6 +1,6 @@
 using UnityEngine;
-#if USING_FVW
 using NVT.EventSystem;
+#if USING_FVW
 using FVW.Events;
 using FVW.JsonSerializables.UserSettingsDataObject;
 #endif
@@ -14,13 +14,10 @@ using UnityEngine.Rendering;
 /// When attached to an object that also has a ZEDRenderingPlane, applies an effect on the camera image for
 /// abstraction purposes.
 /// </summary>
-#if USING_FVW
+
 public class VideoAbstractionManager : MonoBehaviour, IEventListener
 {
-#else
-public class VideoAbstractionManager : MonoBehaviour
-{
-#endif
+
 
     /// <summary>
     /// The plane used for rendering. Equal to the canvas value of ZEDRenderingPlane. 
@@ -230,15 +227,17 @@ public class VideoAbstractionManager : MonoBehaviour
         throw new System.NotImplementedException();
     }
 
-#if USING_FVW
+
     public void OnEventRaised(NVT.EventSystem.Object evtObj, IEvent sender)
     {
+#if USING_FVW
         if (sender.Equals(abstractionObject.Event))
         {
             abstractionMode = (int) MapAbstraction(((AbstractionObject) evtObj).Value);
         }
-    }
 #endif
+    }
+
 
     /// <summary>
     /// Initialization logic that must be done after the ZED camera has finished initializing. 
