@@ -18,7 +18,8 @@ public static class UpgradePluginToSRP
 
                 foreach (var cam in cameras)
                 {
-                    cam.transform.Find("Frame").GetComponent<MeshRenderer>().sharedMaterial = Mat_Zed_Forward_Lighting;
+                    if(cam.transform.Find("Frame") != null)
+                        cam.transform.Find("Frame").GetComponent<MeshRenderer>().sharedMaterial = Mat_Zed_Forward_Lighting;
                 }
 
                 if (cameras.Length > 0)
