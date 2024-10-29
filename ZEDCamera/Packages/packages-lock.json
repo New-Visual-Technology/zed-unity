@@ -150,20 +150,6 @@
       },
       "url": "https://packages.unity.com"
     },
-    "fronius.nvt.event-system": {
-      "version": "file:C:/Projekte/FVWN_STD/FVWN-STD_Unity/Library/PackageCache/fronius.nvt.event-system@3b87789aee",
-      "depth": 0,
-      "source": "local",
-      "dependencies": {
-        "fronius.nvt.utilities": "1.0.3"
-      }
-    },
-    "fronius.nvt.utilities": {
-      "version": "file:C:/Projekte/FVWN_STD/FVWN-STD_Unity/Library/PackageCache/fronius.nvt.utilities@cc8386c13e",
-      "depth": 0,
-      "source": "local",
-      "dependencies": {}
-    },
     "com.unity.modules.ai": {
       "version": "1.0.0",
       "depth": 0,

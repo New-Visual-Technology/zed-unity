@@ -5,10 +5,11 @@ using UnityEngine.XR;
 using System.Collections;
 using System.Collections.Generic;
 using sl;
-using NVT.EventSystem;
+
 
 // NVT Port
 #if USING_FVW
+using NVT.EventSystem;
 using FVW.Modules.Tracking;
 using FVW.Events;
 using FVW.JsonSerializables.UserSettingsDataObject;
@@ -33,8 +34,13 @@ using UnityEditor;
 /// </remarks>
 
 
+#if USING_FVW
 public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
 {
+#else
+public class ZEDManager : MonoBehaviour
+{
+#endif
     /// <summary>
     /// Static function to get instance of the ZEDManager with a given camera_ID. See sl.ZED_CAMERA_ID for the available choices.
     /// </summary>
@@ -4108,15 +4114,15 @@ public class ZEDManager : MonoBehaviour, IEventListener // NVT Port
 
     public void OnDisable() => m_cameraBrightnessObject?.Event.UnregisterListener(this);
 
-#endif
+
     public void OnEventRaised(NVT.EventSystem.Object evtObj, IEvent sender)
     {
-#if USING_FVW
+
         if (evtObj == m_cameraBrightnessObject)
             OnCameraBrightnessChanged();
-#endif
-    }
 
+    }
+#endif
 
     public UnityEngine.Object GetObject() => this;
 

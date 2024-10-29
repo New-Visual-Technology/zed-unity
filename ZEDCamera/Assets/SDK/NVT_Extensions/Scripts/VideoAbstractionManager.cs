@@ -1,7 +1,8 @@
 using UnityEngine;
-using NVT.EventSystem;
+
 using System;
 #if USING_FVW
+using NVT.EventSystem;
 using FVW.Events;
 using FVW.JsonSerializables.UserSettingsDataObject;
 #endif
@@ -16,8 +17,13 @@ using UnityEngine.Rendering;
 /// abstraction purposes.
 /// </summary>
 
+#if USING_FVW
 public class VideoAbstractionManager : MonoBehaviour, IEventListener
 {
+#else
+public class VideoAbstractionManager : MonoBehaviour
+{
+#endif
 
 
     /// <summary>
@@ -228,17 +234,17 @@ public class VideoAbstractionManager : MonoBehaviour, IEventListener
         throw new System.NotImplementedException();
     }
 
-
+#if USING_FVW
     public void OnEventRaised(NVT.EventSystem.Object evtObj, IEvent sender)
     {
-#if USING_FVW
+
         if (sender.Equals(abstractionObject.Event))
         {
             abstractionMode = (int) MapAbstraction(((AbstractionObject) evtObj).Value);
         }
-#endif
-    }
 
+    }
+#endif
 
     /// <summary>
     /// Initialization logic that must be done after the ZED camera has finished initializing. 
