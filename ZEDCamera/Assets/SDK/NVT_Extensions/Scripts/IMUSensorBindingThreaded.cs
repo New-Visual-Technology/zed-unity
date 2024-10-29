@@ -1,10 +1,11 @@
 using System.Threading;
+using sl;
+using UnityEngine;
 #if USING_FVW
 using FVW.Events;
 using FVW.Utility.Unity;
 #endif
-using sl;
-using UnityEngine;
+
 
 public class IMUSensorBindingThreaded : MonoBehaviour
 {
