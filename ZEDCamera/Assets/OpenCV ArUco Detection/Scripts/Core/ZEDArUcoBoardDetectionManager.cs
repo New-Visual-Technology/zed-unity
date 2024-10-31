@@ -116,7 +116,7 @@ public class ZEDArUcoBoardDetectionManager : MonoBehaviour
         //Create empty structures to hold the output of Aruco.detectMarkers. 
         List<Mat> corners = new List<Mat>();
         Mat ids = new Mat();
-
+        MatOfDouble distCoeffs = new MatOfDouble(0, 0, 0, 0);
 
 
         DetectorParameters detectparams = new DetectorParameters();
@@ -128,11 +128,91 @@ public class ZEDArUcoBoardDetectionManager : MonoBehaviour
         ArucoDetector arucoDetector = new ArucoDetector(predict, detectparams);
         arucoDetector.detectMarkers(iamgeMat, corners, ids);
         
+        if (ids.total() == 0)
+            return;
 
-        //Make matrices to hold the output rotations and translations of each detected marker. 
-        Mat rotvectors = new Mat();
-        Mat transvectors = new Mat();
+        // https://github.com/opencv/opencv_contrib/blob/f10c84d48b0714f2b408c9e5cccfac1277c8e6cc/modules/aruco/src/aruco.cpp#L43
+        if (corners.Count != ids.total())
+            return;
 
+        using (Mat rvec = new Mat(1, 1, CvType.CV_64FC3))
+        using (Mat tvec = new Mat(1, 1, CvType.CV_64FC3))
+        using (Mat objPoints = new Mat())
+        using (Mat imgPoints = new Mat())
+        {
+            // Get object and image points for the solvePnP function
+            board.matchImagePoints(corners, ids, objPoints, imgPoints);
+
+            if (imgPoints.total() != objPoints.total())
+                return;
+
+            if (objPoints.total() == 0) // 0 of the detected markers in board
+                return;
+
+            // Find pose
+            MatOfPoint3f objPoints_p3f = new MatOfPoint3f(objPoints);
+            MatOfPoint2f imgPoints_p3f = new MatOfPoint2f(imgPoints);
+            Calib3d.solvePnP(objPoints_p3f, imgPoints_p3f, camMat, distCoeffs, rvec, tvec);
+
+            // If at least one board marker detected
+            int markersOfBoardDetected = (int)objPoints.total() / 4;
+            if (markersOfBoardDetected > 0)
+            {
+
+                double[] rvecArr = new double[3];
+                rvec.get(0, 0, rvecArr);
+                double[] tvecArr = new double[3];
+                tvec.get(0, 0, tvecArr);
+                PoseData poseData = ARUtils.ConvertRvecTvecToPoseData(rvecArr, tvecArr);
+                
+
+                // Convert to transform matrix.
+                Matrix4x4 ARM = ARUtils.ConvertPoseDataToMatrix(ref poseData, true);
+                ARM = cam.transform.localToWorldMatrix * ARM;
+                PoseData pose = ARUtils.ConvertMatrixToPoseData(ref ARM);
+                
+                //ARUtils.SetTransformFromMatrix(arGameObject.transform, ref ARM);
+                Dictionary<int, List<sl.Pose>> detectedWorldPoses = new Dictionary<int, List<sl.Pose>>();
+                if (!detectedWorldPoses.ContainsKey(0))
+                {
+                    detectedWorldPoses.Add(0, new List<sl.Pose>());
+                }
+                detectedWorldPoses[0].Add(new sl.Pose() { translation = pose.pos, rotation = pose.rot });
+
+                foreach (BoardObject boardObject in registeredBoards[0])
+                {
+                    boardObject.BoardDetectedSingle(pose.pos, pose.rot);
+                }
+                if (OnBoardsDetected != null) OnBoardsDetected.Invoke(detectedWorldPoses);
+
+                //foreach (int detectedid in detectedWorldPoses.Keys)
+                foreach (int key in registeredBoards.Keys)
+                {
+                    if (detectedWorldPoses.ContainsKey(key))
+                    {
+                        foreach (BoardObject boardObject in registeredBoards[key])
+                        {
+                            boardObject.BoardDetectedAll(detectedWorldPoses[key]);
+                        }
+                    }
+                    else
+                    {
+                        foreach (BoardObject boardObject in registeredBoards[key])
+                        {
+                            boardObject.BoardNotDetected();
+                        }
+                    }
+                }
+             
+            }
+        }
+        
+
+        
+        
+
+        
+        /*
         //Convert the 2D corner positions into a 3D pose for each detected marker. 
         //Aruco.estimatePoseSingleMarkers(corners, markerWidthMeters, camMat, new Mat(), rotvectors, transvectors);
         int valid = Aruco.estimatePoseBoard(corners, ids, board, camMat, new Mat(), rotvectors, transvectors);
@@ -233,7 +313,7 @@ public class ZEDArUcoBoardDetectionManager : MonoBehaviour
                     boardObject.BoardNotDetected();
                 }
             }
-        }
+        }*/
     }
 
 
