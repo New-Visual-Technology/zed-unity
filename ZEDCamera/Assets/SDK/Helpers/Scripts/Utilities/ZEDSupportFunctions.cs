@@ -28,7 +28,11 @@ public class ZEDSupportFunctions
 
             if (xRLoader)
             {
-                if (xRLoader.name == "OculusLoader" || xRLoader.name == "OpenVRLoader")
+	            if (xRLoader.Start())
+	            {
+		            isPresent = xRLoader.Start();
+	            }
+	            else if (xRLoader.name == "OculusLoader" || xRLoader.name == "OpenVRLoader")
                 {
                     var xrDisplaySubsystems = new List<XRDisplaySubsystem>();
                     SubsystemManager.GetInstances<XRDisplaySubsystem>(xrDisplaySubsystems);
@@ -40,11 +44,7 @@ public class ZEDSupportFunctions
                         }
                     }
                 }
-                else if (xRLoader.name == "OpenXRLoader")
-                {
-                    isPresent = xRLoader.Start();
-                }
-                else { isPresent = false; }
+	            else { isPresent = false; }
             }
             else
             {
