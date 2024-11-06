@@ -2123,10 +2123,10 @@ public class ZEDManager : MonoBehaviour
     /// </summary>
     void Awake()
     {
-        if (UpgradePluginToSRP.UpgradeCameraToSRP(gameObject))
-        {
-            Debug.Log("Upgraded camera to SRP.");
-        }
+        // if (UpgradePluginToSRP.UpgradeCameraToSRP(gameObject))
+        // {
+        //     Debug.Log("Upgraded camera to SRP.");
+        // }
 
         // If never initialized, init the array of instances linked to each ZEDManager that could be created.
         if (ZEDManagerInstance == null)
