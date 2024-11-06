@@ -25,7 +25,7 @@ Shader "NVT/Compute GreenScreen"
             #pragma target 4.0
 
             #include "UnityCG.cginc"
-            #include "../../SDK/Helpers/Shaders/ZED_Utils.cginc"
+            #include "../../Helpers/Shaders/ZED_Utils.cginc"
 
             struct appdata
             {
