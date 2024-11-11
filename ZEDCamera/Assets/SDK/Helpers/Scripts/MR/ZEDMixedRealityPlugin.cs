@@ -69,6 +69,7 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
     {
         public Quaternion Orientation;
         public Vector3 Translation;
+        
         public ulong Timestamp;
     };
 
@@ -556,16 +557,16 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
         if (manager == null)
             return;
 
-        InputDevice head = InputDevices.GetDeviceAtXRNode(XRNode.CenterEye);
-        head.TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 headPosition);
-        head.TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion headRotation);
-
-#if NEW_TRANSFORM_API
-        finalCenterEye.transform.SetLocalPositionAndRotation(headPosition, headRotation);
-#else
-        finalCenterEye.transform.localPosition = headPosition;
-        finalCenterEye.transform.localRotation = headRotation;
-#endif
+//         InputDevice head = InputDevices.GetDeviceAtXRNode(XRNode.CenterEye);
+//         head.TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 headPosition);
+//         head.TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion headRotation);
+//
+// #if NEW_TRANSFORM_API
+//         finalCenterEye.transform.SetLocalPositionAndRotation(headPosition, headRotation);
+// #else
+//         finalCenterEye.transform.localPosition = headPosition;
+//         finalCenterEye.transform.localRotation = headRotation;
+// #endif
         Quaternion r;
 
         //Modified code to ensure view in HMD does not play like a movie screen
