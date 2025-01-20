@@ -127,9 +127,6 @@ namespace FVW.InteractionSystem
         private void OnZEDReadyHandler()
         {
             Fade(false, 1000);
-            
-            // reactivate raycasts when Zed is ready again after resolution change
-            EnableRaycasts(true);
         }
 
         private void EnableRaycasts(bool enable)
@@ -140,16 +137,12 @@ namespace FVW.InteractionSystem
             {
                 foreach (CastRaycastFromObject castRaycast in FindObjectsByType<CastRaycastFromObject>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
                 {
-Debug.Log(castRaycast);
-                    Debug.Log(castRaycast.gameObject);
                     activeRaycasts.Add(castRaycast);
                 }
             }
             // deactivate raycasts from list, later activate them again
             foreach (CastRaycastFromObject raycast in activeRaycasts)
             {
-                Debug.Log(raycast);
-                Debug.Log(raycast.gameObject);
                 raycast.gameObject.SetActive(enable);
             }
 #endif
@@ -183,6 +176,9 @@ Debug.Log(castRaycast);
 
             if (destroyOnFadeOut && !fadeIn)
             {
+                // reactivate raycasts when Zed is ready again after resolution change
+                EnableRaycasts(true);
+                
                 Destroy(gameObject);
             }
         }
