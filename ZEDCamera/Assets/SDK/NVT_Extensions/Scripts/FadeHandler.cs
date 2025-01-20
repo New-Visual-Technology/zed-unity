@@ -140,12 +140,16 @@ namespace FVW.InteractionSystem
             {
                 foreach (CastRaycastFromObject castRaycast in FindObjectsByType<CastRaycastFromObject>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
                 {
+Debug.Log(castRaycast);
+                    Debug.Log(castRaycast.gameObject);
                     activeRaycasts.Add(castRaycast);
                 }
             }
             // deactivate raycasts from list, later activate them again
             foreach (CastRaycastFromObject raycast in activeRaycasts)
             {
+                Debug.Log(raycast);
+                Debug.Log(raycast.gameObject);
                 raycast.gameObject.SetActive(enable);
             }
 #endif
@@ -178,7 +182,9 @@ namespace FVW.InteractionSystem
             }
 
             if (destroyOnFadeOut && !fadeIn)
+            {
                 Destroy(gameObject);
+            }
         }
 
 
