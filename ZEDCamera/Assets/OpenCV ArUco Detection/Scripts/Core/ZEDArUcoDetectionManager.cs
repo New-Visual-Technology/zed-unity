@@ -255,32 +255,32 @@ public class ZEDArUcoDetectionManager : MonoBehaviour
         DICT_APRILTAG_36h11 = Objdetect.DICT_APRILTAG_36h11
     }
 
-    // public enum PreDefinedmarkerDictionary
-    // {
-    //     DICT_4X4_50 = Aruco.DICT_4X4_50,
-    //     DICT_4X4_100 = Aruco.DICT_4X4_100,
-    //     DICT_4X4_250 = Aruco.DICT_4X4_250,
-    //     DICT_4X4_1000 = Aruco.DICT_4X4_1000,
-    //     DICT_5X5_50 = Aruco.DICT_5X5_50,
-    //     DICT_5X5_100 = Aruco.DICT_5X5_100,
-    //     DICT_5X5_250 = Aruco.DICT_5X5_250,
-    //     DICT_5X5_1000 = Aruco.DICT_5X5_1000,
-    //     DICT_6X6_50 = Aruco.DICT_6X6_50,
-    //     DICT_6X6_100 = Aruco.DICT_6X6_100,
-    //     DICT_6X6_250 = Aruco.DICT_6X6_250,
-    //     DICT_6X6_1000 = Aruco.DICT_6X6_1000,
-    //     DICT_7X7_50 = Aruco.DICT_7X7_50,
-    //     DICT_7X7_100 = Aruco.DICT_7X7_100,
-    //     DICT_7X7_250 = Aruco.DICT_7X7_250,
-    //     DICT_7X7_1000 = Aruco.DICT_7X7_1000,
-    //     DICT_ARUCO_ORIGINAL = Aruco.DICT_ARUCO_ORIGINAL,
-    //     DICT_APRILTAG_16h5 = Aruco.DICT_APRILTAG_16h5,
-    //     DICT_APRILTAG_25h9 = Aruco.DICT_APRILTAG_25h9,
-    //     DICT_APRILTAG_36h10 = Aruco.DICT_APRILTAG_36h10,
-    //     DICT_APRILTAG_36h11 = Aruco.DICT_APRILTAG_36h11
-    //
-    // }
-    
+    /*public enum PreDefinedmarkerDictionary
+    {
+        DICT_4X4_50 = Aruco.DICT_4X4_50,
+        DICT_4X4_100 = Aruco.DICT_4X4_100,
+        DICT_4X4_250 = Aruco.DICT_4X4_250,
+        DICT_4X4_1000 = Aruco.DICT_4X4_1000,
+        DICT_5X5_50 = Aruco.DICT_5X5_50,
+        DICT_5X5_100 = Aruco.DICT_5X5_100,
+        DICT_5X5_250 = Aruco.DICT_5X5_250,
+        DICT_5X5_1000 = Aruco.DICT_5X5_1000,
+        DICT_6X6_50 = Aruco.DICT_6X6_50,
+        DICT_6X6_100 = Aruco.DICT_6X6_100,
+        DICT_6X6_250 = Aruco.DICT_6X6_250,
+        DICT_6X6_1000 = Aruco.DICT_6X6_1000,
+        DICT_7X7_50 = Aruco.DICT_7X7_50,
+        DICT_7X7_100 = Aruco.DICT_7X7_100,
+        DICT_7X7_250 = Aruco.DICT_7X7_250,
+        DICT_7X7_1000 = Aruco.DICT_7X7_1000,
+        DICT_ARUCO_ORIGINAL = Aruco.DICT_ARUCO_ORIGINAL,
+        DICT_APRILTAG_16h5 = Aruco.DICT_APRILTAG_16h5,
+        DICT_APRILTAG_25h9 = Aruco.DICT_APRILTAG_25h9,
+        DICT_APRILTAG_36h10 = Aruco.DICT_APRILTAG_36h10,
+        DICT_APRILTAG_36h11 = Aruco.DICT_APRILTAG_36h11
+
+    }
+    */
 
 }
 

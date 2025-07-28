@@ -1,4 +1,4 @@
-#if ZED_OPENCV_FOR_UNITY
+﻿#if ZED_OPENCV_FOR_UNITY
 
 using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.ImgprocModule;
@@ -106,9 +106,6 @@ public class ZEDToOpenCVRetriever : MonoBehaviour
     // Use this for initialization
     void Start ()
     {
-        if(zedManager.IsZEDReady)
-            Initialize();
-        
         //We can't call initialize() now, because it needs the ZED's projection matrix to build an OpenCV Mat of it. 
         //So we wait until OnZEDReady is called. Then we can get the ZED's calibration parameters. 
         zedManager.OnZEDReady += Initialize;
