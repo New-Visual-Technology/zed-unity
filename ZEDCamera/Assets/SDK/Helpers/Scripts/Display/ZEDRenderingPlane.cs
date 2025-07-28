@@ -370,11 +370,19 @@ public class ZEDRenderingPlane : MonoBehaviour
     /// <summary>
     /// Default near plane value. Overrides camera's settings on start but will update if camera values change at runtime.
     /// </summary>
+#if ZED_NVT_FVW
+    private float nearplane = 0.01f;
+#else
     private float nearplane = 0.1f;
+#endif
     /// <summary>
     /// Default far plane value. Overrides camera's settings on start but will update if camera values change at runtime.
     /// </summary>
+#if ZED_NVT_FVW
+    private float farplane = 100.0f;
+#else
     private float farplane = 500.0f;
+#endif
 
     /// <summary>
     /// The target RenderTexture we'll render to if in AR mode.
@@ -535,6 +543,9 @@ public class ZEDRenderingPlane : MonoBehaviour
             //mainCamera.farClipPlane = 500.0f;
             scale(canvas, GetFOVYFromProjectionMatrix(cam.projectionMatrix));
             cam.fieldOfView = zedCamera.VerticalFieldOfView * Mathf.Rad2Deg;
+#if ZED_NVT_FVW
+            SetOverlayCameraParameters();
+#endif
         }
         else //Just scale the screen.
         {
@@ -699,6 +710,10 @@ public class ZEDRenderingPlane : MonoBehaviour
 #if ZED_HDRP && !ZED_URP//Need FoV to calculate world space positions accurately. 
         matRGB.SetFloat("_ZEDHFoVRad", zedCamera.GetCalibrationParameters().leftCam.hFOV * Mathf.Deg2Rad);
         matRGB.SetFloat("_ZEDVFoVRad", zedCamera.GetCalibrationParameters().leftCam.vFOV * Mathf.Deg2Rad);
+#if ZED_NVT_FVW
+        matRGB.SetFloat("_cx", zedCamera.GetCalibrationParameters().leftCam.cx / zedCamera.ImageWidth);
+        matRGB.SetFloat("_cy", zedCamera.GetCalibrationParameters().leftCam.cy / zedCamera.ImageHeight);
+#endif
 #endif
 
         forwardMat.SetTexture("_MainTex", textureEye);
@@ -898,12 +913,20 @@ public class ZEDRenderingPlane : MonoBehaviour
         {
             if (zedCamera != null && zedCamera.IsCameraReady)
             {
+#if ZED_NVT_FVW
+                renderTextureTarget = new RenderTexture(2208, 1242, 24, RenderTextureFormat.RGB111110Float);
+#else
                 renderTextureTarget = new RenderTexture(zedCamera.ImageWidth, zedCamera.ImageHeight, 24, RenderTextureFormat.ARGB32);
+#endif
                 cam.targetTexture = renderTextureTarget;
             }
             else if (sl.ZEDCamera.CheckPlugin())
             {
+#if ZED_NVT_FVW
+                renderTextureTarget = new RenderTexture(2208, 1242, 24, RenderTextureFormat.RGB111110Float);
+#else
                 renderTextureTarget = new RenderTexture(Screen.width, Screen.height, 24, RenderTextureFormat.ARGB32);
+#endif
                 cam.targetTexture = renderTextureTarget;
             }
         }
@@ -928,7 +951,11 @@ public class ZEDRenderingPlane : MonoBehaviour
         {
             if (zedCamera != null && zedCamera.IsCameraReady)
             {
+#if ZED_NVT_FVW
+                renderTextureTarget = new RenderTexture(2208, 1242, 24, RenderTextureFormat.RGB111110Float);
+#else
                 renderTextureTarget = new RenderTexture(zedCamera.ImageWidth, zedCamera.ImageHeight, 24, RenderTextureFormat.ARGB32);
+#endif
                 cam.targetTexture = renderTextureTarget;
             }
 
@@ -965,6 +992,10 @@ public class ZEDRenderingPlane : MonoBehaviour
                 }
                 normals = zedCamera.CreateTextureMeasureType(sl.MEASURE.NORMALS, resolution);
                 depth = zedCamera.CreateTextureMeasureType(sl.MEASURE.DEPTH, resolution);
+#if ZED_NVT_FVW
+                // This is needed for the scriptable render feature to work properly.
+                Shader.SetGlobalTexture("_CameraLeftTex", textureEye);
+#endif
                 break;
             case ZED_CAMERA_SIDE.RIGHT:
             case ZED_CAMERA_SIDE.RIGHT_FORCE:
@@ -982,6 +1013,10 @@ public class ZEDRenderingPlane : MonoBehaviour
                 }
                 normals = zedCamera.CreateTextureMeasureType(sl.MEASURE.NORMALS_RIGHT, resolution);
                 depth = zedCamera.CreateTextureMeasureType(sl.MEASURE.DEPTH_RIGHT, resolution);
+#if ZED_NVT_FVW
+                // This is needed for the scriptable render feature to work properly.
+                Shader.SetGlobalTexture("_CameraRightTex", textureEye);
+#endif
                 break;
         }
     }
@@ -1298,6 +1333,9 @@ public class ZEDRenderingPlane : MonoBehaviour
         if (zedManager.IsZEDReady && (cam.nearClipPlane != nearplane || cam.farClipPlane != farplane))
         {
             SetProjection(nearplane, farplane); //If the camera's near/far planes changed, update the matrix.
+#if ZED_NVT_FVW
+            SetOverlayCameraParameters();
+#endif
         }
 
 #if UNITY_EDITOR
@@ -1474,6 +1512,23 @@ public class ZEDRenderingPlane : MonoBehaviour
         nearplane = near;
         farplane = far;
     }
+
+#if ZED_NVT_FVW
+    private void SetOverlayCameraParameters()
+    {
+        // Set same settings for cameras in stack
+        var cameraData = cam.GetUniversalAdditionalCameraData();
+
+        foreach (Camera subCamera in cameraData.cameraStack)
+        {
+            subCamera.fieldOfView = cam.fieldOfView;
+            subCamera.nearClipPlane = cam.nearClipPlane;
+            subCamera.farClipPlane = cam.farClipPlane;
+
+            subCamera.projectionMatrix = cam.projectionMatrix;
+        }
+    }
+#endif
 
     /// Forces the ZED's image to be displayed at a 16:9 ratio, regardless of the window's aspect ratio.
     /// This is why the image doesn't stretch when the Game window in the editor is set to Free Aspet.

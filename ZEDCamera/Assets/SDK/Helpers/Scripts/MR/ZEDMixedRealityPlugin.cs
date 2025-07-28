@@ -7,6 +7,10 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.XR;
 
+#if ZED_NVT_FVW
+using FVW.Modules.Tracking;
+#endif
+
 /// <summary>
 /// In pass-through AR mode, handles the final output to the VR headset, positioning the final images
 /// to make the pass-through effect natural and comfortable. Also moves/rotates the images to
@@ -291,6 +295,10 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
         return XRSettings.loadedDeviceName;
     }
 
+#if ZED_NVT_FVW
+    public GetTrackable HeadTrackable;
+#endif
+
     private void Awake()
     {
         //Initialize the latency tracking only if a supported headset is detected.
@@ -400,7 +408,12 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
 		float zed2eye_distance = 0.1f; //Estimating 10cm between your eye and physical location of the ZED Mini.
 		hasVRDevice = ZEDSupportFunctions.hasXRDevice();
 
-		if (hasVRDevice) {
+#if ZED_NVT_FVW
+        if (XRSettings.eyeTextureWidth == 0 || XRSettings.eyeTextureHeight == 0)
+            Debug.LogWarning("XRSettings.eyetexture width or height is 0. Maybe XR didnt initialize correctly");
+#endif
+
+        if (hasVRDevice) {
 			sl.CalibrationParameters parameters = zedCamera.CalibrationParametersRectified;
 			scaleFromZED = ComputeSizePlaneWithGamma (new sl.Resolution (zedCamera.ImageWidth, zedCamera.ImageHeight),
 				perception_distance, zed2eye_distance, offset.z,
@@ -459,9 +472,14 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
 
         KeyPose k = new KeyPose();
 
+#if ZED_NVT_FVW
+        k.Orientation = HeadTrackable.GetRotation();
+        k.Translation = HeadTrackable.GetPosition();
+#else
         InputDevice head = InputDevices.GetDeviceAtXRNode(XRNode.Head);
         head.TryGetFeatureValue(CommonUsages.devicePosition, out k.Translation);
         head.TryGetFeatureValue(CommonUsages.deviceRotation, out k.Orientation);
+#endif
 
         if (manager.zedCamera.IsCameraReady)
         {
@@ -502,6 +520,7 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
         if (manager == null)
             return;
 
+#if !ZED_NVT_FVW
         InputDevice head = InputDevices.GetDeviceAtXRNode(XRNode.CenterEye);
         head.TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 headPosition);
         head.TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion headRotation);
@@ -511,6 +530,7 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
 #else
         finalCenterEye.transform.localPosition = headPosition;
         finalCenterEye.transform.localRotation = headRotation;
+#endif
 #endif
         Quaternion r;
 
@@ -545,6 +565,7 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
 
         Transform tmpHMD = transform;
 
+#if !ZED_NVT_FVW
         InputDevice head = InputDevices.GetDeviceAtXRNode(XRNode.Head);
 
         Quaternion headRotation = Quaternion.identity;
@@ -555,6 +576,7 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
 
         tmpHMD.position = headPosition;
         tmpHMD.rotation = headRotation;
+#endif
 
         Quaternion r = Quaternion.identity;
         Vector3 t = Vector3.zero;
@@ -605,11 +627,15 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
     {
         hasVRDevice = ZEDSupportFunctions.hasXRDevice();
 
+#if ZED_NVT_FVW
+        Pose hmdTransform = new Pose(HeadTrackable.GetPosition(), HeadTrackable.GetRotation());
+#else
         InputDevice head = InputDevices.GetDeviceAtXRNode(XRNode.Head);
         head.TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 headPosition);
         head.TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion headRotation);
 
         Pose hmdTransform = new Pose(headPosition, headRotation);
+#endif
 
         trackingData.trackingState = (int)manager.ZEDTrackingState; //Whether the ZED's tracking is currently valid (not off or unable to localize).
         trackingData.zedPathTransform = new Pose(position, orientation);
@@ -672,11 +698,16 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
 
                 if ((!manager.IsZEDReady && manager.IsStereoRig))
                 {
+#if ZED_NVT_FVW
+                    Quaternion rot = HeadTrackable.GetRotation();
+                    Vector3 pos = HeadTrackable.GetPosition();
+#else
                     System.Collections.Generic.List<XRNodeState> nodeStates = new System.Collections.Generic.List<XRNodeState>();
                     InputTracking.GetNodeStates(nodeStates);
                     XRNodeState nodeState = nodeStates.Find(node => node.nodeType == XRNode.Head);
                     nodeState.TryGetRotation(out Quaternion rot);
                     nodeState.TryGetPosition(out Vector3 pos);
+#endif
 
 #if NEW_TRANSFORM_API
                     quadCenter.SetLocalPositionAndRotation(pos + quadCenter.localRotation * offset, rot);
@@ -703,9 +734,14 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
 
 			if ((!manager.IsZEDReady && manager.IsStereoRig))
 			{
+#if ZED_NVT_FVW
+                Quaternion headRotation = HeadTrackable.GetRotation();
+                Vector3 headPosition = HeadTrackable.GetPosition();
+#else
                 InputDevice head = InputDevices.GetDeviceAtXRNode(XRNode.CenterEye);
                 head.TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 headPosition);
                 head.TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion headRotation);
+#endif
 
 #if NEW_TRANSFORM_API
                 quadCenter.SetLocalPositionAndRotation(headPosition + quadCenter.localRotation * offset, headRotation);

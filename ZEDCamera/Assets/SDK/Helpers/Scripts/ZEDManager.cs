@@ -9,6 +9,13 @@ using UnityEditor;
 #endif
 using sl;
 
+#if ZED_NVT_FVW
+using NVT.EventSystem;
+using FVW.Modules.Tracking;
+using FVW.Events;
+using FVW.JsonSerializables.UserSettingsDataObject;
+#endif
+
 /// <summary>
 /// The central script of the ZED Unity plugin, and the primary way a developer can interact with the camera.
 /// It sets up and closes connection to the ZED, adjusts parameters based on user settings, enables/disables/handles
@@ -18,7 +25,11 @@ using sl;
 /// ZEDManager is attached to the root objects in the ZED_Rig_Mono and ZED_Rig_Stereo prefabs.
 /// If using ZED_Rig_Stereo, it will set isStereoRig to true, which triggers several behaviors unique to stereo pass-through AR.
 /// </remarks>
+#if ZED_NVT_FVW
+public class ZEDManager : MonoBehaviour, IEventListener
+#else
 public class ZEDManager : MonoBehaviour
+#endif
 {
 
     /// <summary>
@@ -58,7 +69,11 @@ public class ZEDManager : MonoBehaviour
     /// at C:/ProgramData/stereolabs/SL_Unity_wrapper.txt. This helps find issues that may occur within
     /// the protected .dll, but can decrease performance.
     /// </summary>
+#if ZED_NVT_FVW
     private bool wrapperVerbose = true;
+#else
+    private bool wrapperVerbose = true;
+#endif
 
     /// <summary>
     /// Current instance of the ZED Camera, which handles calls to the Unity wrapper .dll.
@@ -85,7 +100,11 @@ public class ZEDManager : MonoBehaviour
     /// </summary>
     /*[Tooltip("The accuracy of depth calculations. Higher settings mean more accurate occlusion and lighting but costs performance.")]*/
     [HideInInspector]
+#if ZED_NVT_FVW
+    public sl.DEPTH_MODE depthMode = sl.DEPTH_MODE.NONE;
+#else
     public sl.DEPTH_MODE depthMode = sl.DEPTH_MODE.NEURAL;
+#endif
 
 
     /// <summary>
@@ -97,12 +116,20 @@ public class ZEDManager : MonoBehaviour
     /// Camera Resolution
     /// </summary>
     [HideInInspector]
+#if ZED_NVT_FVW
+    public sl.RESOLUTION resolution = sl.RESOLUTION.HD720;
+#else
     public sl.RESOLUTION resolution = sl.RESOLUTION.AUTO;
+#endif
     /// <summary>
     /// Targeted FPS, based on the resolution. VGA = 100, HD720 = 60, HD1080 = 30, HD2K = 15.
     /// </summary>
-	[HideInInspector]
+    [HideInInspector]
+#if ZED_NVT_FVW
+    public int FPS = 60;
+#else
     public int FPS = -1;
+#endif
 
     /// <summary>
     /// Serial number of the camera to open. Leave the SN to 0 to open the camera by ID
@@ -845,6 +872,20 @@ public class ZEDManager : MonoBehaviour
         }
     }
 
+#if ZED_NVT_FVW
+    [SerializeField]
+    [HideInInspector]
+    private IntObject m_cameraBrightnessObject = null;
+
+    [SerializeField]
+    [HideInInspector]
+    private Camera m_overlayCamera = null;
+
+    [SerializeField]
+    [HideInInspector]
+    private GameObject headCenter = null;
+#endif
+
     /// <summary>
     /// Defines if the depth map should be completed or not, similar to the removed SENSING_MODE::FILL.
     /// Warning: Enabling this will override the confidence values confidenceThreshold and textureConfidenceThreshold as well as removeSaturatedAreas
@@ -1336,7 +1377,11 @@ public class ZEDManager : MonoBehaviour
     /// the depth stabilize smooth range is [0, 100]
     /// 0 means a low temporal smmoothing behavior(for highly dynamic scene),
     /// 100 means a high temporal smoothing behavior(for static scene)
+#if ZED_NVT_FVW
+    private int depthStabilization = -1;
+#else
     private int depthStabilization = 30;
+#endif
     /// <summary>
     /// Indicates if Sensors( IMU,...) is needed/required. For most applications, it is required.
     /// Sensors are transmitted through USB2.0 lines. If USB2 is not available (USB3.0 only extension for example), set it to false.
@@ -1345,7 +1390,11 @@ public class ZEDManager : MonoBehaviour
     /// <summary>
     /// Set the camera in Flip mode
     /// </summary>
+#if ZED_NVT_FVW
+    private sl.FLIP_MODE cameraFlipMode = sl.FLIP_MODE.OFF;
+#else
     private sl.FLIP_MODE cameraFlipMode = sl.FLIP_MODE.AUTO;
+#endif
     /// <summary>
     /// Whether the camera is currently being tracked using the ZED's inside-out tracking.
     /// </summary>ccvv
@@ -1514,6 +1563,13 @@ public class ZEDManager : MonoBehaviour
     /// </summary>
     private bool running = false;
 
+#if ZED_NVT_FVW
+    /// <summary>
+    /// Whether image grabbing thread is running.
+    /// </summary>
+    public bool IsRunning { get { return running; } }
+#endif
+
     /// <summary>
     /// Initialization thread.
     /// </summary>
@@ -1648,6 +1704,16 @@ public class ZEDManager : MonoBehaviour
             cameraRight = camRightTransform.GetComponent<Camera>();
         return cameraRight;
     }
+
+#if ZED_NVT_FVW
+    /// <summary>
+    /// Gets the head center object. It has to be set explicitly in the editor.
+    /// </summary>
+    public GameObject GetHeadCenter()
+    {
+        return headCenter;
+    }
+#endif
 
 #pragma warning disable 414
     /// <summary>
@@ -2036,10 +2102,12 @@ public class ZEDManager : MonoBehaviour
     /// </summary>
     void Awake()
     {
+#if !ZED_NVT_FVW
         if (UpgradePluginToSRP.UpgradeCameraToSRP(gameObject))
         {
             Debug.Log("Upgraded camera to SRP.");
         }
+#endif
 
         // If never initialized, init the array of instances linked to each ZEDManager that could be created.
         if (ZEDManagerInstance == null)
@@ -2126,8 +2194,11 @@ public class ZEDManager : MonoBehaviour
 
             initParameters.depthMinimumDistance = 0.1f; //Allow depth calculation to very close objects.
 
+#if !ZED_NVT_FVW
+            //Buggy and does nothing, so we are not using it.
             //For the Game/output window, mirror the headset view using a custom script that avoids stretching.
             CreateMirror();
+#endif
         }
 
         //Determine if we should enable the right depth measurement, which costs performance but is needed for pass-through AR.
@@ -2322,6 +2393,11 @@ public class ZEDManager : MonoBehaviour
 
             zedReady = true;
             isDisconnected = false; //In case we just regained connection.
+
+#if ZED_NVT_FVW
+            if (m_overlayCamera)
+                m_overlayCamera.gameObject.SetActive(true);
+#endif
 
             setRenderingSettings(); //Find the ZEDRenderingPlanes in the rig and configure them.
             AdjustZEDRigCameraPosition(); //If in AR mode, move cameras to proper offset relative to zedRigRoot.
@@ -3506,6 +3582,10 @@ public class ZEDManager : MonoBehaviour
         zedRigDisplayer = new GameObject("ZEDRigDisplayer");
         arRig = zedRigDisplayer.AddComponent<ZEDMixedRealityPlugin>();
 
+#if ZED_NVT_FVW
+        arRig.HeadTrackable = GetComponent<GetTrackable>();
+#endif
+
         /*Screens left and right */
         GameObject centerScreen = GameObject.CreatePrimitive(PrimitiveType.Quad);
         centerScreen.name = "Quad";
@@ -3532,10 +3612,24 @@ public class ZEDManager : MonoBehaviour
         cam.allowMSAA = false;
         cam.depth = camRightTransform.GetComponent<Camera>().depth;
 
+#if ZED_NVT_FVW
+#if ZED_URP
+        var cameraData = cam.GetUniversalAdditionalCameraData();
+        if (m_overlayCamera)
+            cameraData.cameraStack.Add(m_overlayCamera);
+#endif
+
+        XRDevice.DisableAutoXRCameraTracking(cam, true);
+#endif
+
         HideFromWrongCameras.RegisterZEDCam(cam);
         HideFromWrongCameras hider = centerScreen.AddComponent<HideFromWrongCameras>();
         hider.SetRenderCamera(cam);
+#if ZED_NVT_FVW
+        hider.showInNonZEDCameras = true;
+#else
         hider.showInNonZEDCameras = false;
+#endif
         SetLayerRecursively(camCenter, arLayer);
 
         //Hide camera in editor.
@@ -3931,5 +4025,64 @@ public class ZEDManager : MonoBehaviour
     }
 #endif
 
+#if ZED_NVT_FVW
+    public void SetResolution(NVT.EventSystem.Object res)
+    {
+        CameraResolution currentRes = res.Cast<ResolutionObject>().Value;
+        switch (currentRes)
+        {
+            case CameraResolution.Vga:
+                if (resolution == sl.RESOLUTION.VGA)
+                    return;
+                resolution = sl.RESOLUTION.VGA;
+                FPS = 100;
+                break;
+            case CameraResolution.Hd720:
+                if (resolution == sl.RESOLUTION.HD720)
+                    return;
+                resolution = sl.RESOLUTION.HD720;
+                FPS = 60;
+                break;
+            case CameraResolution.Hd1080:
+                if (resolution == sl.RESOLUTION.HD1080)
+                    return;
+                resolution = sl.RESOLUTION.HD1080;
+                FPS = 30;
+                break;
+            case CameraResolution.Hd2K:
+                if (resolution == sl.RESOLUTION.HD2K)
+                    return;
+                resolution = sl.RESOLUTION.HD2K;
+                FPS = 15;
+                break;
+            default:
+                Debug.LogWarning("Unspecified Resolution, this should never happen");
+                break;
+        }
+
+        Reset();
+    }
+
+    public void OnEnable() => m_cameraBrightnessObject?.Event.RegisterListener(this);
+
+    public void OnDisable() => m_cameraBrightnessObject?.Event.UnregisterListener(this);
+
+    public void OnEventRaised(NVT.EventSystem.Object evtObj, IEvent sender)
+    {
+        if (evtObj == m_cameraBrightnessObject)
+            OnCameraBrightnessChanged();
+    }
+
+    /// <summary>
+    /// Poll the current camera brightness value
+    /// </summary>
+    private void OnCameraBrightnessChanged()
+    {
+        if (m_cameraBrightnessObject != null)
+            CameraBrightness = m_cameraBrightnessObject.Value;
+    }
+
+    public UnityEngine.Object GetObject() => this;
+#endif
 
 }

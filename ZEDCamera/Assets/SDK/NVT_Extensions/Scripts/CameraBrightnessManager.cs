@@ -1,7 +1,7 @@
 using UnityEngine;
 using sl;
 
-#if USING_FVW
+#if ZED_NVT_FVW
 using NVT.EventSystem;
 #endif
 
@@ -30,7 +30,7 @@ public class CameraBrightnessManager : MonoBehaviour
     [Range(1, 2000)]
     private int sampleInterval = 1;
 
-#if USING_FVW
+#if ZED_NVT_FVW
     [SerializeField]
     private IntObject cameraBrightnessObject = null;
 #endif
@@ -48,7 +48,7 @@ public class CameraBrightnessManager : MonoBehaviour
                 return;
 
             cameraBrightness = value;
-#if USING_FVW
+#if ZED_NVT_FVW
             if (cameraBrightnessObject != null)
                 cameraBrightnessObject.Value = cameraBrightness;
 #endif

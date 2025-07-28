@@ -1,7 +1,7 @@
 using System.Threading;
 using sl;
 using UnityEngine;
-#if USING_FVW
+#if ZED_NVT_FVW
 using FVW.Events;
 using FVW.Utility.Unity;
 #endif
@@ -10,7 +10,7 @@ using FVW.Utility.Unity;
 public class IMUSensorBindingThreaded : MonoBehaviour
 {
     [SerializeField] private ZEDManager zedManager;
-#if USING_FVW
+#if ZED_NVT_FVW
     [SerializeField] private IMUSensorDataObject imuSensorDataObject;
     [SerializeField] private WeldingObjectVector3Buffered gravityDirection;
     [SerializeField] private WeldingObjectQuaternionBuffered fusedOrientation;
@@ -63,7 +63,7 @@ public class IMUSensorBindingThreaded : MonoBehaviour
         {
             if (zedManager != null && zedManager.zedCamera != null)
             {
-#if USING_FVW
+#if ZED_NVT_FVW
                 if (!zedManager.running)
                 {
                     if (imuSensorDataObject.Running)

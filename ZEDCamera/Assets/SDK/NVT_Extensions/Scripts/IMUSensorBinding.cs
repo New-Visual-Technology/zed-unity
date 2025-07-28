@@ -1,5 +1,5 @@
 
-#if USING_FVW
+#if ZED_NVT_FVW
 using FVW.Events;
 using FVW.Utility.Unity;
 #endif
@@ -10,7 +10,7 @@ public class IMUSensorBinding : MonoBehaviour
 {
     // Set configuration parameters
     [SerializeField] private ZEDManager zedManager;
-#if USING_FVW
+#if ZED_NVT_FVW
     [SerializeField] private IMUSensorDataObject imuSensorDataObject;
     [SerializeField] private WeldingObjectVector3Buffered gravityDirection;
 #endif
@@ -30,9 +30,9 @@ public class IMUSensorBinding : MonoBehaviour
             return;
         }
 
-        if (!zedManager.running)
+        if (!zedManager.IsRunning)
         {
-#if USING_FVW
+#if ZED_NVT_FVW
             if (imuSensorDataObject.Running)
             {
                 imuSensorDataObject.Running = false;
@@ -46,7 +46,7 @@ public class IMUSensorBinding : MonoBehaviour
 
         if (sensors_data.imu.timestamp > last_imu_timestamp)
         {
-#if USING_FVW
+#if ZED_NVT_FVW
             // Set Sensors Data in Scriptable Object
             imuSensorDataObject.FusedOrientation = sensors_data.imu.fusedOrientation;
 

@@ -30,7 +30,11 @@ public class ZEDMirror : MonoBehaviour
 
     void Start()
     {
+#if ZED_NVT_FVW
+        XRSettings.gameViewRenderMode = GameViewRenderMode.None; // Turn off mirroring to the game view
+#else
         XRSettings.showDeviceView = false; //Turn off default behavior.
+#endif
 
 #if ZED_HDRP || ZED_URP
         RenderPipelineManager.endFrameRendering += OnFrameEnd;

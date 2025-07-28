@@ -1,7 +1,7 @@
 using UnityEngine;
 
 using System;
-#if USING_FVW
+#if ZED_NVT_FVW
 using NVT.EventSystem;
 using FVW.Events;
 using FVW.JsonSerializables.UserSettingsDataObject;
@@ -17,7 +17,7 @@ using UnityEngine.Rendering;
 /// abstraction purposes.
 /// </summary>
 
-#if USING_FVW
+#if ZED_NVT_FVW
 public class VideoAbstractionManager : MonoBehaviour, IEventListener
 {
 #else
@@ -157,7 +157,7 @@ public class VideoAbstractionManager : MonoBehaviour
     // [SerializeField]
     // [Tooltip("Event to register with.")]
     // private ValueChangedEvent abstractionChanged;
-#if USING_FVW
+#if ZED_NVT_FVW
     [SerializeField] private AbstractionObject abstractionObject;
 #endif
 
@@ -171,7 +171,7 @@ public class VideoAbstractionManager : MonoBehaviour
 
         screenManager = GetComponent<ZEDRenderingPlane>();
         cameraManager.OnZEDReady += ZEDReady;
-#if USING_FVW
+#if ZED_NVT_FVW
         if (abstractionObject.Event != null)
         {
             abstractionObject.Event.RegisterListener(this);
@@ -187,7 +187,7 @@ public class VideoAbstractionManager : MonoBehaviour
         {
             cameraManager.OnZEDReady -= ZEDReady;
         }
-#if USING_FVW
+#if ZED_NVT_FVW
         if (abstractionObject.Event != null)
         {
             abstractionObject.Event.UnregisterListener(this);
@@ -223,7 +223,7 @@ public class VideoAbstractionManager : MonoBehaviour
 
         RenderPipelineManager.beginCameraRendering += OnSRPPreRender;
 #endif
-#if USING_FVW
+#if ZED_NVT_FVW
         // Set default value
         abstractionMode = (int) MapAbstraction(Abstraction.Greyscale);
 #endif
@@ -234,7 +234,7 @@ public class VideoAbstractionManager : MonoBehaviour
         throw new System.NotImplementedException();
     }
 
-#if USING_FVW
+#if ZED_NVT_FVW
     public void OnEventRaised(NVT.EventSystem.Object evtObj, IEvent sender)
     {
 
@@ -382,7 +382,7 @@ public class VideoAbstractionManager : MonoBehaviour
         GrayscaleEdgesAddedToGrayscale = 6
     }
 
-#if USING_FVW
+#if ZED_NVT_FVW
     private VideoProcessing MapAbstraction(Abstraction abstraction)
     {
         return abstraction switch

@@ -2,6 +2,10 @@
 using UnityEngine;
 using UnityEditor;
 
+#if ZED_NVT_FVW
+using NVT.EventSystem;
+#endif
+
 /// <summary>
 /// Custom editor used by ZEDManager to extend the default panel shown in the Inspector.
 /// Adds the camera status boxes, the button on the bottom to open camera settings, and a button to restart the camera when
@@ -58,6 +62,12 @@ public class ZEDCameraEditor : Editor
     private SerializedProperty depthOcclusionProperty;
     private SerializedProperty arpostProcessingPropery;
     private SerializedProperty camBrightnessProperty;
+
+#if ZED_NVT_FVW
+    private SerializedProperty camBrightnessObjectProperty;
+    private SerializedProperty overlayCameraProperty;
+    private SerializedProperty headCenterProperty;
+#endif
 
     //Recording Prop
     private SerializedProperty svoOutputFileNameProperty;
@@ -272,6 +282,12 @@ public class ZEDCameraEditor : Editor
         depthOcclusionProperty = serializedObject.FindProperty("depthOcclusion");
         arpostProcessingPropery = serializedObject.FindProperty("postProcessing");
         camBrightnessProperty = serializedObject.FindProperty("m_cameraBrightness");
+
+#if ZED_NVT_FVW
+        camBrightnessObjectProperty = serializedObject.FindProperty("m_cameraBrightnessObject");
+        overlayCameraProperty = serializedObject.FindProperty("m_overlayCamera");
+        headCenterProperty = serializedObject.FindProperty("headCenter");
+#endif
 
         ///Spatial Mapping Serialized Properties
         range = serializedObject.FindProperty("mappingRangePreset");
@@ -1278,6 +1294,17 @@ public class ZEDCameraEditor : Editor
             GUIContent camBrightnessPropertyLabel = new GUIContent("Camera Brightness", "Brightness of the final real-world image. Default is 100. Lower to darken the environment in a realistic-looking way. " +
             "This is a rendering setting that doesn't affect the raw input from the camera.");
             camBrightnessProperty.intValue = EditorGUILayout.IntSlider(camBrightnessPropertyLabel, camBrightnessProperty.intValue, 0, 100);
+
+#if ZED_NVT_FVW
+            GUIContent camBrightnessObjectPropertyLabel = new GUIContent("Camera Brightness Object", "Object which holds the current camera brightness value");
+            camBrightnessObjectProperty.objectReferenceValue = EditorGUILayout.ObjectField(camBrightnessObjectPropertyLabel, camBrightnessObjectProperty.objectReferenceValue, typeof(IntObject), true);
+
+            GUIContent overlayCameraPropertyLabel = new GUIContent("Overlay Camera Object", "Object which holds the the camera for overlay, such as hud-skins, ui texts, etc ...");
+            overlayCameraProperty.objectReferenceValue = EditorGUILayout.ObjectField(overlayCameraPropertyLabel, overlayCameraProperty.objectReferenceValue, typeof(Camera), true);
+
+            GUIContent headCenterPropertyLabel = new GUIContent("Head Center Object", "Object which defines the head center");
+            headCenterProperty.objectReferenceValue = EditorGUILayout.ObjectField(headCenterPropertyLabel, headCenterProperty.objectReferenceValue, typeof(GameObject), true);
+#endif
 
             //Style for the AR layer box. 
             GUIStyle layerboxstyle = new GUIStyle(EditorStyles.numberField);
