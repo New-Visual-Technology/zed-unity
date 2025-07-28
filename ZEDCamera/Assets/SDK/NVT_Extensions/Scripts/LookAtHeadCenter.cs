@@ -30,7 +30,9 @@ public class LookAtHeadCenter : MonoBehaviour
 
         if (ZedManager)
         {
+#if ZED_NVT_FVW
             headCenter = ZedManager.GetHeadCenter();
+#endif
         }
     }
 

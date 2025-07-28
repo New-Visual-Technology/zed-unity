@@ -1,10 +1,9 @@
-
+using sl;
+using UnityEngine;
 #if ZED_NVT_FVW
 using FVW.Events;
 using FVW.Utility.Unity;
 #endif
-using sl;
-using UnityEngine;
 
 public class IMUSensorBinding : MonoBehaviour
 {
@@ -30,14 +29,13 @@ public class IMUSensorBinding : MonoBehaviour
             return;
         }
 
+#if ZED_NVT_FVW
         if (!zedManager.IsRunning)
         {
-#if ZED_NVT_FVW
             if (imuSensorDataObject.Running)
             {
                 imuSensorDataObject.Running = false;
             }
-#endif
 
             return;
         }
@@ -46,7 +44,6 @@ public class IMUSensorBinding : MonoBehaviour
 
         if (sensors_data.imu.timestamp > last_imu_timestamp)
         {
-#if ZED_NVT_FVW
             // Set Sensors Data in Scriptable Object
             imuSensorDataObject.FusedOrientation = sensors_data.imu.fusedOrientation;
 
@@ -58,7 +55,7 @@ public class IMUSensorBinding : MonoBehaviour
             {
                 imuSensorDataObject.Running = true;
             }
-#endif
         }
+#endif
     }
 }
