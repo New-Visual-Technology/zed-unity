@@ -1,4 +1,4 @@
-﻿//======= Copyright (c) Stereolabs Corporation, All rights reserved. ===============
+//======= Copyright (c) Stereolabs Corporation, All rights reserved. ===============
 
 using System.Collections;
 using UnityEngine;
@@ -104,7 +104,7 @@ public class NVT_GUIMessage : MonoBehaviour
         if (!zedManager.IsStereoRig) //Without VR, we use a Screen Space - Overlay canvas. 
         {
             //Instantiate the mono warning prefab and set basic settings for it. 
-            warningmono = Instantiate(Resources.Load("PrefabsUI/Warning") as GameObject, transform);
+            warningmono = Instantiate(Resources.Load("ZEDUI/ZEDWarning") as GameObject, zedManager.GetLeftCameraTransform());
             warningmono.SetActive(true);
             warningmono.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceCamera;
 
@@ -134,7 +134,7 @@ public class NVT_GUIMessage : MonoBehaviour
         else //In VR, we use two Screen Space - Camera canvases, one for each eye. 
         {
             //Instantiate the left warning prefab and set basic settings for it.
-            warningleft = Instantiate(Resources.Load("PrefabsUI/Warning_VR") as GameObject, zedManager.GetLeftCameraTransform());
+            warningleft = Instantiate(Resources.Load("ZEDUI/ZEDWarning_VR") as GameObject, zedManager.GetLeftCameraTransform());
             warningleft.SetActive(true);
             warningleft.GetComponent<Canvas>().worldCamera = zedManager.GetLeftCamera();
             warningleft.GetComponent<Canvas>().planeDistance = 0.31f;
@@ -147,7 +147,7 @@ public class NVT_GUIMessage : MonoBehaviour
             //imageleft.transform.parent.gameObject.SetActive(true);
 
             //Instantiate the right warning prefab and set basic settings for it.
-            warningright = Instantiate(Resources.Load("PrefabsUI/Warning_VR") as GameObject, zedManager.GetRightCameraTransform());
+            warningright = Instantiate(Resources.Load("ZEDUI/ZEDWarning_VR") as GameObject, zedManager.GetLeftCameraTransform());
             warningright.SetActive(true);
             warningright.GetComponent<Canvas>().worldCamera = zedManager.GetRightCamera();
             warningright.GetComponent<Canvas>().planeDistance = 0.31f;
