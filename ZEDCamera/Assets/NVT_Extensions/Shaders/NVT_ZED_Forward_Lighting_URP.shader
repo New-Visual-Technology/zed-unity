@@ -45,11 +45,11 @@ Shader "NVT/ZED Forward Lighting URP"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
             //For ZED CG functions, namely depth conversion.
-            #include "./../../SDK/Helpers/Shaders/ZED_Utils.cginc"
+            #include "ZED_Utils.cginc"
             #define ZED_SPOT_LIGHT_DECLARATION
             #define ZED_POINT_LIGHT_DECLARATION
 
-            #include "./../../SDK/Helpers/Shaders/Lighting/ZED_Lighting_URP.cginc"
+            #include "ZED_Lighting_URP.cginc"
 
             struct Attributes
             {

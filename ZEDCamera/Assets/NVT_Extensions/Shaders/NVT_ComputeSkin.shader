@@ -24,7 +24,7 @@ Shader "NVT/Compute Skin"
             #pragma shader_feature USE_WORKPIECE_MASK
 
             #include "UnityCG.cginc"
-            #include "./../../SDK/Helpers/Shaders/ZED_Utils.cginc"
+            #include "ZED_Utils.cginc"
             #include "NVT_Utils.cginc"
 
             struct appdata
