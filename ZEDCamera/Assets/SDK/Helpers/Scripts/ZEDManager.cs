@@ -74,7 +74,7 @@ public class ZEDManager : MonoBehaviour
     /// the protected .dll, but can decrease performance.
     /// </summary>
 #if ZED_NVT_FVW
-    private bool wrapperVerbose = true;
+    private bool wrapperVerbose = false;
 #else
     private bool wrapperVerbose = true;
 #endif
