@@ -2,6 +2,9 @@
 
 using UnityEngine;
 using UnityEngine.Rendering;
+#if ZED_URP
+using UnityEngine.Rendering.Universal;
+#endif
 
 
 /// <summary>
@@ -1165,7 +1168,7 @@ public class ZEDRenderingPlane : MonoBehaviour
                     }
                     else if (light.type == LightType.Directional)
                     {
-                        hasShadows = light.shadows != LightShadows.None && QualitySettings.shadows != ShadowQuality.Disable;
+                        hasShadows = light.shadows != LightShadows.None && QualitySettings.shadows != UnityEngine.ShadowQuality.Disable;
                         directionalLightData[0] = new Vector4(light.gameObject.transform.forward.normalized.x, light.gameObject.transform.forward.normalized.y, light.gameObject.transform.forward.normalized.z, 0);
                         directionalLightData[1] = light.color * light.intensity;
                         // Copy the shadows from the directional light. If not, no shadows in transparent mode.

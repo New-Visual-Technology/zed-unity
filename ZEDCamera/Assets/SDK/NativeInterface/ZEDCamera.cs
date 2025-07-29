@@ -64,7 +64,11 @@ namespace sl
         public static bool Init()
         {
 #if UNITY_EDITOR
+#if ZED_NVT_FVW
+            string DllPath = Path.Combine(UnityEngine.Application.dataPath, "Plugins/ZED/SDK/Plugins/x86_64", sl.ZEDCamera.nameDll);
+#else
             string DllPath = Path.Combine(UnityEngine.Application.dataPath, "SDK/Plugins/x86_64", sl.ZEDCamera.nameDll);
+#endif
             if (!TryLoadLibrary(DllPath))
             {
                 DllPath = TryGetDllFromPackage(packageName, Path.Combine("SDK/Plugins/x86_64", sl.ZEDCamera.nameDll));

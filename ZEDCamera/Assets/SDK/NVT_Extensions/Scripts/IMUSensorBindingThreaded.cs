@@ -64,7 +64,7 @@ public class IMUSensorBindingThreaded : MonoBehaviour
             if (zedManager != null && zedManager.zedCamera != null)
             {
 #if ZED_NVT_FVW
-                if (!zedManager.running)
+                if (!zedManager.IsRunning)
                 {
                     if (imuSensorDataObject.Running)
                     {

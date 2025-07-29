@@ -9,6 +9,10 @@ using UnityEditor;
 #endif
 using sl;
 
+#if ZED_URP
+using UnityEngine.Rendering.Universal;
+#endif
+
 #if ZED_NVT_FVW
 using NVT.EventSystem;
 using FVW.Modules.Tracking;
