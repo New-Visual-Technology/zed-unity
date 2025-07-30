@@ -2,6 +2,7 @@
 
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.XR;
 
 /// <summary>
@@ -141,20 +142,23 @@ public class NVT_GUIMessage : MonoBehaviour
 
             warningleft.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
 
+            warningleft.GetComponent<CanvasScaler>().dynamicPixelsPerUnit = 1;
+
             textleft = warningleft.GetComponentInChildren<UnityEngine.UI.Text>(true);
             textleft.color = Color.white;
             imageleft = warningleft.transform.GetChild(0).GetChild(1).gameObject;
             //imageleft.transform.parent.gameObject.SetActive(true);
 
             //Instantiate the right warning prefab and set basic settings for it.
-            warningright = Instantiate(Resources.Load("ZEDUI/ZEDWarning_VR") as GameObject, zedManager.GetLeftCameraTransform());
+            warningright = Instantiate(Resources.Load("ZEDUI/ZEDWarning_VR") as GameObject, zedManager.GetRightCameraTransform());
             warningright.SetActive(true);
             warningright.GetComponent<Canvas>().worldCamera = zedManager.GetRightCamera();
             warningright.GetComponent<Canvas>().planeDistance = 0.31f;
 
             warningright.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
 
-
+            warningright.GetComponent<CanvasScaler>().dynamicPixelsPerUnit = 1;
+            
             textright = warningright.GetComponentInChildren<UnityEngine.UI.Text>(true);
             textright.color = Color.white;
             imageright = warningright.transform.GetChild(0).GetChild(1).gameObject;
@@ -386,10 +390,10 @@ public class NVT_GUIMessage : MonoBehaviour
             oldInitStatus = e;
         }
 
-        if (ready) //ZED has finished initializing. Set a timer, then disable texts after it expires. 
+        if (ready && !init) //ZED has finished initializing. Set a timer, then disable texts after it expires. 
         {
-            timerWarning += Time.deltaTime;
-            if (timerWarning > 0.5f)
+            //timerWarning += Time.deltaTime;
+            //if (timerWarning > 0.5f)
             {
                 if (warningmono)
                 {
@@ -419,8 +423,8 @@ public class NVT_GUIMessage : MonoBehaviour
 
     private void EnableWarningVRPanel()
     {
-        warningright.transform.GetChild(0).gameObject.SetActive(true);
         warningleft.transform.GetChild(0).gameObject.SetActive(true);
+        warningright.transform.GetChild(0).gameObject.SetActive(true);
     }
 
     /// <summary>

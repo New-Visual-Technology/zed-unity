@@ -40,7 +40,7 @@ public class ZEDSupportFunctions
                         }
                     }
                 }
-                else if (xRLoader.name == "OpenXRLoader")
+                else if (xRLoader.name == "Open XR Loader")
                 {
                     isPresent = xRLoader.Start();
                 }

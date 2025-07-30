@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -105,6 +105,7 @@ public class HideFromWrongCameras : MonoBehaviour
 
     private void DrawCanvas(Camera drawcam)
     {
+#if !ZED_NVT_FVW
         float referenceAspect = 16.0f / 9.0f;
         float currentAspect = (float)Screen.width / Screen.height;
 
@@ -114,8 +115,12 @@ public class HideFromWrongCameras : MonoBehaviour
         Vector3 newScale = new Vector3(transform.localScale.x * scaleFactorX, transform.localScale.y * scaleFactorY, transform.localScale.z);
 
         Matrix4x4 canvastrs = Matrix4x4.TRS(transform.position, transform.rotation, newScale);
-        Graphics.DrawMesh(mfilter.mesh, canvastrs, rend.material, gameObject.layer, drawcam);
+        Graphics.DrawMesh(mfilter.mesh, canvastrs, rend.material, gameObject.layer, drawcam, 0, null, false, false);
+#else
+        Matrix4x4 canvastrs = Matrix4x4.TRS(transform.position, transform.rotation, transform.localScale);
 
+        Graphics.DrawMesh(mfilter.mesh, canvastrs, rend.material, gameObject.layer, drawcam, 0, null, false, false);
+#endif
     }
 #else
 
