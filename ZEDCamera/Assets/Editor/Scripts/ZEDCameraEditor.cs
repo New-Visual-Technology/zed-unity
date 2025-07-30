@@ -1,4 +1,4 @@
-﻿//======= Copyright (c) Stereolabs Corporation, All rights reserved. ===============
+//======= Copyright (c) Stereolabs Corporation, All rights reserved. ===============
 using UnityEngine;
 using UnityEditor;
 
@@ -1295,17 +1295,6 @@ public class ZEDCameraEditor : Editor
             "This is a rendering setting that doesn't affect the raw input from the camera.");
             camBrightnessProperty.intValue = EditorGUILayout.IntSlider(camBrightnessPropertyLabel, camBrightnessProperty.intValue, 0, 100);
 
-#if ZED_NVT_FVW
-            GUIContent camBrightnessObjectPropertyLabel = new GUIContent("Camera Brightness Object", "Object which holds the current camera brightness value");
-            camBrightnessObjectProperty.objectReferenceValue = EditorGUILayout.ObjectField(camBrightnessObjectPropertyLabel, camBrightnessObjectProperty.objectReferenceValue, typeof(IntObject), true);
-
-            GUIContent overlayCameraPropertyLabel = new GUIContent("Overlay Camera Object", "Object which holds the the camera for overlay, such as hud-skins, ui texts, etc ...");
-            overlayCameraProperty.objectReferenceValue = EditorGUILayout.ObjectField(overlayCameraPropertyLabel, overlayCameraProperty.objectReferenceValue, typeof(Camera), true);
-
-            GUIContent headCenterPropertyLabel = new GUIContent("Head Center Object", "Object which defines the head center");
-            headCenterProperty.objectReferenceValue = EditorGUILayout.ObjectField(headCenterPropertyLabel, headCenterProperty.objectReferenceValue, typeof(GameObject), true);
-#endif
-
             //Style for the AR layer box. 
             GUIStyle layerboxstyle = new GUIStyle(EditorStyles.numberField);
             layerboxstyle.fixedWidth = 30;
@@ -1417,6 +1406,26 @@ public class ZEDCameraEditor : Editor
             //Fade In At Start toggle. 
             GUIContent fadeinlabel = new GUIContent("Fade In at Start", "When enabled, makes the ZED image fade in from black when the application starts.");
             fadeinonstart.boolValue = EditorGUILayout.Toggle(fadeinlabel, manager.fadeInOnStart);
+
+#if ZED_NVT_FVW
+            GUILayout.Space(12);
+
+            EditorGUI.indentLevel--;
+
+            EditorGUILayout.LabelField("NVT Settings", EditorStyles.boldLabel);
+            GUILayout.Space(5);
+
+            EditorGUI.indentLevel++;
+
+            GUIContent camBrightnessObjectPropertyLabel = new GUIContent("Camera Brightness Object", "Object which holds the current camera brightness value");
+            camBrightnessObjectProperty.objectReferenceValue = EditorGUILayout.ObjectField(camBrightnessObjectPropertyLabel, camBrightnessObjectProperty.objectReferenceValue, typeof(IntObject), true);
+
+            GUIContent overlayCameraPropertyLabel = new GUIContent("Overlay Camera Object", "Object which holds the the camera for overlay, such as hud-skins, ui texts, etc ...");
+            overlayCameraProperty.objectReferenceValue = EditorGUILayout.ObjectField(overlayCameraPropertyLabel, overlayCameraProperty.objectReferenceValue, typeof(Camera), true);
+
+            GUIContent headCenterPropertyLabel = new GUIContent("Head Center Object", "Object which defines the head center");
+            headCenterProperty.objectReferenceValue = EditorGUILayout.ObjectField(headCenterPropertyLabel, headCenterProperty.objectReferenceValue, typeof(GameObject), true);
+#endif
 
             EditorGUI.EndDisabledGroup();
             EditorGUI.indentLevel--;

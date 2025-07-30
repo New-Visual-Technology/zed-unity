@@ -2,11 +2,11 @@
     "name": "Stereolabs.Zed",
     "rootNamespace": "",
     "references": [
-        "GUID:15fc0a57446b3144c949da3e2b9737a9",
-        "GUID:e40ba710768534012815d3193fa296cb",
-        "GUID:cef0e9dabbfe59a4790acbf31c21f33e",
-        "GUID:776b4e18db584914dbbedf32c243557d",
-        "GUID:82b4a152f69d0f34b996d76eab428273"
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.XR.Management",
+        "EnoxSoftware.OpenCVForUnity",
+        "NVT.EventSystem",
+        "Fronius.Welducation.Simulator.Core"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

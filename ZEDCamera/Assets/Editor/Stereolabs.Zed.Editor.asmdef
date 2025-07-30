@@ -2,8 +2,8 @@
     "name": "Stereolabs.Zed.Editor",
     "rootNamespace": "",
     "references": [
-        "GUID:2b8b9fa7df37c564899cda0a96289857",
-        "GUID:776b4e18db584914dbbedf32c243557d"
+        "Stereolabs.Zed",
+        "NVT.EventSystem"
     ],
     "includePlatforms": [
         "Editor"
