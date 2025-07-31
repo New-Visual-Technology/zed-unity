@@ -1,8 +1,8 @@
 {
   "name": "com.stereolabs.zed",
   "version": "5.0.2",
-  "displayName": "ZED SDK",
-  "description": "This package brings the features of the ZED cameras into Unity",
+  "displayName": "NVT ZED SDK",
+  "description": "This package brings the features of the ZED cameras into Unity\n\nPimped by Fronius NVT",
   "unity": "2022.3",
   "unityRelease": "0f1",
   "documentationUrl": "https://www.stereolabs.com/docs/unity",
