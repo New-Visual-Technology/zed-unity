@@ -9,10 +9,7 @@
   "changelogUrl": "https://github.com/stereolabs/zed-unity/releases",
   "licensesUrl": "https://github.com/stereolabs/zed-unity?tab=MIT-1-ov-file#readme",
   "dependencies": {
-    "com.unity.xr.management": "4.4.0",
-    "com.unity.ugui": "1.0.0",
-    "com.unity.modules.animation": "1.0.0",
-    "com.unity.modules.imageconversion": "1.0.0"
+    "com.unity.xr.management": "4.4.0"
   },
   "keywords": [
     "ZED SDK",
