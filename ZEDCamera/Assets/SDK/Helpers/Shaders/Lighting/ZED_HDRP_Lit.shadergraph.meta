@@ -1,11 +1,6 @@
 fileFormatVersion: 2
-<<<<<<<< HEAD:ZEDCamera/Assets/Samples~/Multi Cam/README.txt.meta
-guid: 1cff744b9e9834742a7b63005d4cb0b3
-TextScriptImporter:
-========
 guid: cc27b055046ab2f4aa2c72b20cc8e176
 DefaultImporter:
->>>>>>>> master:ZEDCamera/Assets/SDK/Helpers/Shaders/Lighting/ZED_HDRP_Lit.shadergraph.meta
   externalObjects: {}
   userData: 
   assetBundleName: 
