@@ -2,6 +2,8 @@
 
 using UnityEngine;
 using UnityEngine.XR;
+using UnityEditor;
+
 
 #if ZED_HDRP || ZED_URP
 using UnityEngine.Rendering;
@@ -46,7 +48,7 @@ public class ZEDMirror : MonoBehaviour
     {
         if (textureOverlayLeft == null && manager != null)
         {
-			textureOverlayLeft = manager.GetLeftCameraTransform().GetComponent<ZEDRenderingPlane>();
+            textureOverlayLeft = manager.GetLeftCameraTransform().GetComponent<ZEDRenderingPlane>();
         }
     }
 
@@ -61,16 +63,23 @@ public class ZEDMirror : MonoBehaviour
     }
 
 #else
-/// <summary>
-/// Blits the intermediary targetTexture to the final outputTexture for rendering. Used in SRP because there is no OnRenderImage automatic function. 
-/// </summary>
-private void OnFrameEnd(ScriptableRenderContext context, Camera[] cams)
-{
-    if (textureOverlayLeft != null)
+    /// <summary>
+    /// Blits the intermediary targetTexture to the final outputTexture for rendering. Used in SRP because there is no OnRenderImage automatic function. 
+    /// </summary>
+    private void OnFrameEnd(ScriptableRenderContext context, Camera[] cams)
     {
-        Graphics.Blit(textureOverlayLeft.target, (RenderTexture)null);
+#if ZED_NVT_FVW && UNITY_EDITOR
+        if (cams[0].name == SceneView.lastActiveSceneView.camera.name)
+        {
+            return;
+        }
+#endif
+
+        if (textureOverlayLeft != null)
+        {
+            Graphics.Blit(textureOverlayLeft.target, (RenderTexture)null);
+        }
     }
-}
 #endif
 
     private void OnDestroy()
