@@ -138,7 +138,7 @@ public class NVT_GUIMessage : MonoBehaviour
             warningleft = Instantiate(Resources.Load("ZEDUI/ZEDWarning_VR") as GameObject, zedManager.GetLeftCameraTransform());
             warningleft.SetActive(true);
             warningleft.GetComponent<Canvas>().worldCamera = zedManager.GetLeftCamera();
-            warningleft.GetComponent<Canvas>().planeDistance = 0.31f;
+            warningleft.GetComponent<Canvas>().planeDistance = 0.39f;
 
             warningleft.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
 
@@ -148,12 +148,13 @@ public class NVT_GUIMessage : MonoBehaviour
             textleft.color = Color.white;
             imageleft = warningleft.transform.GetChild(0).GetChild(1).gameObject;
             //imageleft.transform.parent.gameObject.SetActive(true);
+            imageleft.SetActive(false);
 
             //Instantiate the right warning prefab and set basic settings for it.
             warningright = Instantiate(Resources.Load("ZEDUI/ZEDWarning_VR") as GameObject, zedManager.GetRightCameraTransform());
             warningright.SetActive(true);
             warningright.GetComponent<Canvas>().worldCamera = zedManager.GetRightCamera();
-            warningright.GetComponent<Canvas>().planeDistance = 0.31f;
+            warningright.GetComponent<Canvas>().planeDistance = 0.39f;
 
             warningright.GetComponent<Canvas>().renderMode = RenderMode.WorldSpace;
 
@@ -163,6 +164,7 @@ public class NVT_GUIMessage : MonoBehaviour
             textright.color = Color.white;
             imageright = warningright.transform.GetChild(0).GetChild(1).gameObject;
             //imageright.transform.parent.gameObject.SetActive(true);
+            imageright.SetActive(false);
 
             if (!sl.ZEDCamera.CheckPlugin()) //Warn the use there's no SDK installed. 
             {
@@ -272,12 +274,12 @@ public class NVT_GUIMessage : MonoBehaviour
 
                     if (imagemono)
                     { //Disable mono rig canvas. 
-                        imagemono.gameObject.SetActive(false);
+                        imagemono.SetActive(false);
                     }
                     else if (imageleft)
                     { //Disable stereo rig canvases. 
-                        imageleft.gameObject.SetActive(false);
-                        imageright.gameObject.SetActive(false);
+                        imageleft.SetActive(false);
+                        imageright.SetActive(false);
                     }
                 }
             }
@@ -410,12 +412,12 @@ public class NVT_GUIMessage : MonoBehaviour
 
             if (imagemono)
             {
-                imagemono.gameObject.transform.parent.gameObject.SetActive(false);
+                imagemono.transform.parent.gameObject.SetActive(false);
             }
             else if (imageleft)
             {
-                imageleft.gameObject.transform.parent.gameObject.SetActive(false);
-                imageright.gameObject.transform.parent.gameObject.SetActive(false);
+                imageleft.transform.parent.gameObject.SetActive(false);
+                imageright.transform.parent.gameObject.SetActive(false);
             }
         }
 
@@ -425,6 +427,9 @@ public class NVT_GUIMessage : MonoBehaviour
     {
         warningleft.transform.GetChild(0).gameObject.SetActive(true);
         warningright.transform.GetChild(0).gameObject.SetActive(true);
+
+        imageleft.SetActive(true);
+        imageright.SetActive(true);
     }
 
     /// <summary>
