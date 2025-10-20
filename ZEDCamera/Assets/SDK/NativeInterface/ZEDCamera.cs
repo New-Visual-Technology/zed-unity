@@ -8,85 +8,57 @@ using System.IO;
 
 namespace sl
 {
-    public static class NativeWrapper
+public static class NativeWrapper
+{
+    private const string LibName = sl.ZEDCamera.nameDll;
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    private delegate int CheckZEDPluginDelegate(int Major, int Minor);
+
+    private static CheckZEDPluginDelegate _checkZEDPlugin;
+
+    private static bool _initialized = false;
+
+    public static bool IsWrapperLoaded => _initialized;
+
+    // Import the function directly using DllImport
+    [DllImport(LibName, CallingConvention = CallingConvention.Cdecl)]
+    private static extern int sl_check_plugin(int major, int minor);
+
+    /// <summary>
+    /// Call this once to initialize the wrapper
+    /// </summary>
+    public static bool Init()
     {
-        [DllImport("kernel32")]
-        private static extern IntPtr LoadLibrary(string dllToLoad);
-
-        [DllImport("kernel32")]
-        private static extern IntPtr GetProcAddress(IntPtr hModule, string procedureName);
-
-        [DllImport("kernel32")]
-        private static extern bool FreeLibrary(IntPtr hModule);
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        private delegate int CheckZEDPluginDelegate(int Major, int Minor);
-
-        private static CheckZEDPluginDelegate _checkZEDPlugin;
-
-        public static bool IsWrapperLoaded => _checkZEDPlugin != null;
-
-        private static string packageName = "com.stereolabs.zed";
-
-        private static bool TryLoadLibrary(string lib)
+        try
         {
-            // load dll from package library
-            IntPtr pDll = LoadLibrary(lib);
-            if (pDll == IntPtr.Zero)
-            {
-                Console.WriteLine("Failed to load DLL.");
-                return false;
-            }
-            IntPtr pAddressOfFunctionToCall = GetProcAddress(pDll, "sl_check_plugin");
-            if (pAddressOfFunctionToCall != IntPtr.Zero)
-            {
-                _checkZEDPlugin = Marshal.GetDelegateForFunctionPointer<CheckZEDPluginDelegate>(pAddressOfFunctionToCall);
-                return true;
-            }
-            return false;
+            // Assign delegate for convenience
+            _checkZEDPlugin = sl_check_plugin;
+            _initialized = true;
         }
-
-#if UNITY_EDITOR
-        private static string TryGetDllFromPackage(string packageName, string relativePath)
+        catch (DllNotFoundException e)
         {
-            foreach (var package in UnityEditor.PackageManager.PackageInfo.GetAllRegisteredPackages())
-            {
-                if (package.name.StartsWith(packageName))
-                {
-                    string fullPath = Path.Combine(package.resolvedPath, relativePath);
-                    return fullPath;
-                }
-            }
-            return null;
+            Debug.LogError($"[NativeWrapper] Native library {LibName} not found: {e.Message}");
         }
-#endif
-
-        public static bool Init()
+        catch (EntryPointNotFoundException e)
         {
-#if UNITY_EDITOR
-#if ZED_NVT_FVW
-            string DllPath = Path.Combine(UnityEngine.Application.dataPath, "Plugins/ZED/SDK/Plugins/x86_64", sl.ZEDCamera.nameDll);
-#else
-            string DllPath = Path.Combine(UnityEngine.Application.dataPath, "SDK/Plugins/x86_64", sl.ZEDCamera.nameDll);
-#endif
-            if (!TryLoadLibrary(DllPath))
-            {
-                DllPath = TryGetDllFromPackage(packageName, Path.Combine("SDK/Plugins/x86_64", sl.ZEDCamera.nameDll));
-            }
-            else return true;
-#else
-            string DllPath = sl.ZEDCamera.nameDll;
-#endif
-            return TryLoadLibrary(DllPath);
+            Debug.LogError($"[NativeWrapper] Function sl_check_plugin not found: {e.Message}");
         }
-
-        public static int CheckPlugin()
-        {
-            if (_checkZEDPlugin == null)
-                throw new InvalidOperationException("Function not loaded.");
-            return _checkZEDPlugin(ZEDCamera.PluginVersion.Major, ZEDCamera.PluginVersion.Minor);
-        }
+        
+        return _initialized;
     }
+
+    /// <summary>
+    /// Call the plugin check function
+    /// </summary>
+    public static int CheckPlugin()
+    {
+        if (!_initialized || _checkZEDPlugin == null)
+            throw new InvalidOperationException("NativeWrapper is not initialized or function missing.");
+
+        return _checkZEDPlugin(ZEDCamera.PluginVersion.Major, ZEDCamera.PluginVersion.Minor);
+    }
+}
 
     /// <summary>
     /// Main interface between Unity and the ZED SDK. Primarily consists of extern calls to the ZED SDK wrapper .dll and

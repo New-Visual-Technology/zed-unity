@@ -100,7 +100,7 @@ public class ZEDToOpenCVRetriever : MonoBehaviour
     private void Awake()
     {
         _instance = this; //Singleton implementation.
-        if (!zedManager) zedManager = FindObjectOfType<ZEDManager>();
+        if (!zedManager) zedManager = FindAnyObjectByType<ZEDManager>();
     }
 
     // Use this for initialization
@@ -203,7 +203,7 @@ public class ZEDToOpenCVRetriever : MonoBehaviour
         if(zedmat == null)
         {
             zedmat = new ZEDMat();
-            zedmat.Create(new sl.Resolution((uint)zedCam.ImageWidth, (uint)zedCam.ImageHeight), mattype);
+            zedmat.Create(new sl.Resolution(zedCam.ImageWidth, zedCam.ImageHeight), mattype);
         }
 
 
