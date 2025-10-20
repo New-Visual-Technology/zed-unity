@@ -666,7 +666,14 @@ public class ZEDMixedRealityPlugin : MonoBehaviour
     /// </summary>
 	public void LateUpdateHmdRendering()
 	{
-		if (!ready) //Make sure intermediate cameras are rendering to the quad's materials.
+#if ZED_NVT_FVW
+        if (leftScreen == null || rightScreen == null)
+        {
+            return;
+        }
+#endif
+
+        if (!ready) //Make sure intermediate cameras are rendering to the quad's materials.
 		{
 			if (leftScreen.target != null && leftScreen.target.IsCreated())
 			{
