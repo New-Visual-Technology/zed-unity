@@ -331,6 +331,18 @@ public class ZEDManager : MonoBehaviour
     public sl.POSITIONAL_TRACKING_MODE positionalTrackingMode;
 
     /// <summary>
+    /// Whether to enable the area mode in localize only mode.
+    /// </summary>
+    [HideInInspector]
+    public bool enableLocalizationOnly;
+
+    /// <summary>
+    /// Whether to enable the 2D ground mode.
+    /// </summary>
+    [HideInInspector]
+    public bool enable2DGroundMode;
+
+    /// <summary>
     /// Estimate initial position by detecting the floor.
     /// </summary>
     [HideInInspector]
@@ -2735,7 +2747,7 @@ public class ZEDManager : MonoBehaviour
 
             sl.ERROR_CODE err = (zedCamera.EnableTracking(ref zedOrientation, ref zedPosition, enableSpatialMemory,
                 enablePoseSmoothing, setFloorAsOrigin, trackingIsStatic, enableIMUFusion, depthMinRange, setGravityAsOrigin, positionalTrackingMode,
-                pathSpatialMemory));
+                enableLocalizationOnly, enable2DGroundMode, pathSpatialMemory));
 
             //Now enable the tracking with the proper parameters.
             if (!(enableTracking = (err == sl.ERROR_CODE.SUCCESS)))
@@ -2826,20 +2838,6 @@ public class ZEDManager : MonoBehaviour
                 if (zedCamera.GetSVOPosition() >= zedCamera.GetSVONumberOfFrames() - 2)
                 {
                     zedCamera.SetSVOPosition(0);
-                    if (enableTracking)
-                    {
-                        if (!(enableTracking = (zedCamera.ResetTracking(initialRotation, initialPosition) == sl.ERROR_CODE.SUCCESS)))
-                        {
-
-                            Debug.LogError("ZED Tracking disabled: Not available during SVO playback when Loop is enabled.");
-                        }
-                    }
-#if NEW_TRANSFORM_API
-                    zedRigRoot.SetLocalPositionAndRotation(initialPosition, initialRotation);
-#else
-                    zedRigRoot.localPosition = initialPosition;
-                    zedRigRoot.localRotation = initialRotation;
-#endif
                 }
             }
 
@@ -3971,7 +3969,7 @@ public class ZEDManager : MonoBehaviour
             {
                 //Enables tracking and initializes the first position of the camera.
                 if (!(enableTracking = (zedCamera.EnableTracking(ref zedOrientation, ref zedPosition, enableSpatialMemory, enablePoseSmoothing, setFloorAsOrigin, trackingIsStatic,
-                    enableIMUFusion, depthMinRange, setGravityAsOrigin, positionalTrackingMode, pathSpatialMemory) == sl.ERROR_CODE.SUCCESS)))
+                    enableIMUFusion, depthMinRange, setGravityAsOrigin, positionalTrackingMode, enableLocalizationOnly, enable2DGroundMode, pathSpatialMemory) == sl.ERROR_CODE.SUCCESS)))
                 {
                     isZEDTracked = false;
                     throw new Exception(ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.TRACKING_NOT_INITIALIZED));
