@@ -100,7 +100,7 @@ public class ZEDToOpenCVRetriever : MonoBehaviour
     private void Awake()
     {
         _instance = this; //Singleton implementation.
-        if (!zedManager) zedManager = FindObjectOfType<ZEDManager>();
+        if (!zedManager) zedManager = FindAnyObjectByType<ZEDManager>();
     }
 
     // Use this for initialization
@@ -119,6 +119,12 @@ public class ZEDToOpenCVRetriever : MonoBehaviour
     /// </summary>
     private void Initialize()
     {
+#if ZED_NVT_FVW
+        if (!zedManager.IsZEDReady)
+        {
+            return;
+        }
+#endif
         zedCam = zedManager.zedCamera;
         sl.CameraParameters camparams = zedCam.CalibrationParametersRectified.leftCam;
 
@@ -159,9 +165,16 @@ public class ZEDToOpenCVRetriever : MonoBehaviour
     /// </summary>
     private void OnZEDGrabbed()
     {
+#if !ZED_NVT_FVW
         if (!isInit) return; //We haven't set up the camera mat yet, so we can't call any of the events that need it. 
+#else
+        if (!isInit)
+        {
+            Initialize(); //We haven't set up the camera mat yet, so try that now.
+        }
+#endif
 
-        if(OnImageUpdated_LeftBGRA != null && OnImageUpdated_LeftBGRA.GetInvocationList().Length > 0) //Regular left color image as BGRA. 
+        if (OnImageUpdated_LeftBGRA != null && OnImageUpdated_LeftBGRA.GetInvocationList().Length > 0) //Regular left color image as BGRA. 
         {
             DeployGrabbedEvent(zedManager.GetLeftCamera(), ref zedLeftBGRAMat, VIEW.LEFT, ZEDMat.MAT_TYPE.MAT_8U_C4, ref cvLeftBGRAMat, OnImageUpdated_LeftBGRA);
         }
