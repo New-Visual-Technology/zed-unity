@@ -14,12 +14,13 @@ public class VirtualCamController : MonoBehaviour
 
     private Quaternion currentRotation = Quaternion.identity;
     private Vector3 currentPosition = Vector3.zero;
-    private float stepTranslation = 0.1f;
-    private float stepRotation = 5f;
 
     private bool initialized = false;
 
 #if ENABLE_LEGACY_INPUT_MANAGER
+    private float stepTranslation = 0.1f;
+    private float stepRotation = 5f;
+
     [SerializeField]
     private KeyCode toLeft = KeyCode.Keypad4;
     [SerializeField]
