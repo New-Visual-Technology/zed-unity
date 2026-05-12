@@ -115,7 +115,7 @@ public class ZEDManager : MonoBehaviour
     /// Input Type in SDK (USB, SVO or Stream)
     /// </summary>
     [HideInInspector]
-    public sl.INPUT_TYPE inputType = sl.INPUT_TYPE.INPUT_TYPE_USB;
+    public sl.INPUT_TYPE inputType = sl.INPUT_TYPE.USB;
     /// <summary>
     /// Camera Resolution
     /// </summary>
@@ -328,7 +328,19 @@ public class ZEDManager : MonoBehaviour
     /// Positional tracking mode used. Can be used to improve accuracy in some type of scene at the cost of longer runtime.
     /// </summary>
     [HideInInspector]
-    public sl.POSITIONAL_TRACKING_MODE positionalTrackingMode;
+    public sl.POSITIONAL_TRACKING_MODE positionalTrackingMode = POSITIONAL_TRACKING_MODE.GEN_3;
+
+    /// <summary>
+    /// Whether to enable the area mode in localize only mode.
+    /// </summary>
+    [HideInInspector]
+    public bool enableLocalizationOnly;
+
+    /// <summary>
+    /// Whether to enable the 2D ground mode.
+    /// </summary>
+    [HideInInspector]
+    public bool enable2DGroundMode;
 
     /// <summary>
     /// Estimate initial position by detecting the floor.
@@ -591,6 +603,12 @@ public class ZEDManager : MonoBehaviour
     /// </summary>
     [HideInInspector]
     public bool objectClassSportFilter = true;
+
+    /// <summary>
+    /// Array of tracking parameters for each class (can be empty for some classes).
+    /// </summary>
+    [HideInInspector]
+    public ObjectTrackingParameters[] objectClassTrackingParameters;
 
     /// <summary>
     /// Whether the object detection module has been activated successfully.
@@ -1608,6 +1626,7 @@ public class ZEDManager : MonoBehaviour
     /// </summary>
     private Thread trackerThread = null;
 
+    private bool isClosing = false;
 
     ///////////////////////////////////////////
     //////  Camera and Player Transforms //////
@@ -1810,8 +1829,9 @@ public class ZEDManager : MonoBehaviour
             return ZEDLayers.arlayer;
         }
     }
-    [SerializeField]
-    [HideInInspector]
+    
+    //[SerializeField]
+    //[HideInInspector]
     //private int arlayer = 30;
 
     /////////////////////////////////////
@@ -1982,26 +2002,50 @@ public class ZEDManager : MonoBehaviour
     {
         running = false;
 
-        //In case the opening thread is still running.
+        if (isRecording)
+        {
+            zedCamera.DisableRecording();
+        }
+
+        if (IsMappingRunning)
+        {
+            StopSpatialMapping();
+        }
+
+        if (IsObjectDetectionRunning)
+        {
+            StopObjectDetection();
+        }
+
+        if (IsBodyTrackingRunning)
+        {
+            StopBodyTracking();
+        }
+
+        // Unblock native Grab() call so the grab thread can exit
+        if (zedCamera != null)
+        {
+            zedCamera.Close();
+        }
+
         if (threadOpening != null)
         {
             initQuittingHandle.Reset();
             forceCloseInit = true;
             initQuittingHandle.Set();
-
-            threadOpening.Join();
+            if (!threadOpening.Join(5000))
+                Debug.LogWarning("[ZEDManager] Opening thread did not exit in time.");
             threadOpening = null;
         }
 
-        //Shut down the image grabbing thread.
         if (threadGrab != null)
         {
-            threadGrab.Join();
+            if (!threadGrab.Join(5000))
+                Debug.LogWarning("[ZEDManager] Grab thread did not exit in time.");
             threadGrab = null;
         }
 
-        if (IsMappingRunning)
-            StopSpatialMapping();
+        zedCamera = null;
 
         Thread.Sleep(10);
     }
@@ -2012,7 +2056,8 @@ public class ZEDManager : MonoBehaviour
     /// </summary>
     private void OnApplicationQuit()
     {
-        CloseManager();
+        
+        Close();
         //sl.ZEDCamera.UnloadPlugin();
 
         //If this was the last camera to close, make sure all instances are closed.
@@ -2034,37 +2079,23 @@ public class ZEDManager : MonoBehaviour
 
     private void CloseManager()
     {
+        // Guard against double-close from both OnDestroy and OnApplicationQuit
+        if (isClosing) return;
+
+        isClosing = true;
+
         if (spatialMapping != null)
             spatialMapping.Dispose();
 
-        if (IsObjectDetectionRunning)
-        {
-            StopObjectDetection();
-        }
-
-        if (IsBodyTrackingRunning)
-        {
-            StopBodyTracking();
-        }
+        // Stop threads FIRST, then disable modules (avoids grabLock contention)
+        zedReady = false;
+        Destroy();
 
 #if !ZED_HDRP && !ZED_URP
         ClearRendering();
 #endif
-
-        zedReady = false;
         OnCamBrightnessChange -= SetCameraBrightness;
         OnMaxDepthChange -= SetMaxDepthRange;
-        Destroy(); //Close the grab and initialization threads.
-
-        if (zedCamera != null)
-        {
-            if (isRecording)
-            {
-                zedCamera.DisableRecording();
-            }
-            zedCamera.Destroy();
-            zedCamera = null;
-        }
 
 #if UNITY_EDITOR //Prevents building the app otherwise.
         //Restore the AR layers that were hidden, if necessary.
@@ -2076,7 +2107,7 @@ public class ZEDManager : MonoBehaviour
         }
 #endif
 
-        sl.ZEDCamera.UnloadInstance((int)cameraID);
+        isClosing = false;
     }
 
 #if !ZED_HDRP && !ZED_URP
@@ -2170,15 +2201,15 @@ public class ZEDManager : MonoBehaviour
             return;
         }
         initParameters.inputType = inputType;
-        if (inputType == sl.INPUT_TYPE.INPUT_TYPE_USB)
+        if (inputType == sl.INPUT_TYPE.USB)
         {
         }
-        else if (inputType == sl.INPUT_TYPE.INPUT_TYPE_SVO)
+        else if (inputType == sl.INPUT_TYPE.SVO)
         {
             initParameters.pathSVO = svoInputFileName;
             initParameters.svoRealTimeMode = svoRealTimeMode;
         }
-        else if (inputType == sl.INPUT_TYPE.INPUT_TYPE_STREAM)
+        else if (inputType == sl.INPUT_TYPE.STREAM)
         {
             initParameters.ipStream = streamInputIP;
             initParameters.portStream = (ushort)streamInputPort;
@@ -2362,7 +2393,7 @@ public class ZEDManager : MonoBehaviour
             cameraFirmware = zedCamera.GetCameraFirmwareVersion().ToString() + "-" + zedCamera.GetSensorsFirmwareVersion().ToString();
             cameraSerialNumber = zedCamera.GetZEDSerialNumber().ToString();
 
-            if (inputType == sl.INPUT_TYPE.INPUT_TYPE_SVO)
+            if (inputType == sl.INPUT_TYPE.SVO)
             {
                 numberFrameMax = zedCamera.GetSVONumberOfFrames();
             }
@@ -2582,7 +2613,7 @@ public class ZEDManager : MonoBehaviour
         if (requestNewFrame && zedReady)
         {
 
-            if (inputType == sl.INPUT_TYPE.INPUT_TYPE_SVO)
+            if (inputType == sl.INPUT_TYPE.SVO)
             {
                 //handle pause
                 if (NeedNewFrameGrab && pauseSVOReading)
@@ -2638,7 +2669,7 @@ public class ZEDManager : MonoBehaviour
                     {
                         zedtrackingState = zedCamera.GetPosition(ref zedOrientation, ref zedPosition, sl.TRACKING_FRAME.LEFT_EYE);
                         //zedtrackingState = sl.TRACKING_STATE.TRACKING_OK;
-                        if (inputType == sl.INPUT_TYPE.INPUT_TYPE_SVO && svoLoopBack == true && initialPoseCached == false)
+                        if (inputType == sl.INPUT_TYPE.SVO && svoLoopBack == true && initialPoseCached == false)
                         {
                             initialPosition = zedPosition;
                             initialRotation = zedOrientation;
@@ -2735,7 +2766,7 @@ public class ZEDManager : MonoBehaviour
 
             sl.ERROR_CODE err = (zedCamera.EnableTracking(ref zedOrientation, ref zedPosition, enableSpatialMemory,
                 enablePoseSmoothing, setFloorAsOrigin, trackingIsStatic, enableIMUFusion, depthMinRange, setGravityAsOrigin, positionalTrackingMode,
-                pathSpatialMemory));
+                enableLocalizationOnly, enable2DGroundMode, pathSpatialMemory));
 
             //Now enable the tracking with the proper parameters.
             if (!(enableTracking = (err == sl.ERROR_CODE.SUCCESS)))
@@ -2821,25 +2852,11 @@ public class ZEDManager : MonoBehaviour
                 OnGrab();
 
             //SVO and loop back ? --> reset position if needed
-            if (zedCamera.GetInputType() == sl.INPUT_TYPE.INPUT_TYPE_SVO && svoLoopBack)
+            if (zedCamera.GetInputType() == sl.INPUT_TYPE.SVO && svoLoopBack)
             {
                 if (zedCamera.GetSVOPosition() >= zedCamera.GetSVONumberOfFrames() - 2)
                 {
                     zedCamera.SetSVOPosition(0);
-                    if (enableTracking)
-                    {
-                        if (!(enableTracking = (zedCamera.ResetTracking(initialRotation, initialPosition) == sl.ERROR_CODE.SUCCESS)))
-                        {
-
-                            Debug.LogError("ZED Tracking disabled: Not available during SVO playback when Loop is enabled.");
-                        }
-                    }
-#if NEW_TRANSFORM_API
-                    zedRigRoot.SetLocalPositionAndRotation(initialPosition, initialRotation);
-#else
-                    zedRigRoot.localPosition = initialPosition;
-                    zedRigRoot.localRotation = initialRotation;
-#endif
                 }
             }
 
@@ -3004,8 +3021,7 @@ public class ZEDManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        //OnApplicationQuit();
-        CloseManager();
+        OnApplicationQuit();
     }
 
 
@@ -3221,6 +3237,9 @@ public class ZEDManager : MonoBehaviour
             objectDetectionRuntimeParameters.objectClassFilter[(int)sl.OBJECT_CLASS.FRUIT_VEGETABLE] = Convert.ToInt32(objectClassFruitVegetableFilter);
             objectDetectionRuntimeParameters.objectClassFilter[(int)sl.OBJECT_CLASS.SPORT] = Convert.ToInt32(objectClassSportFilter);
 
+            objectDetectionRuntimeParameters.objectClassTrackingParameters = new sl.ObjectTrackingParameters[(int)sl.OBJECT_CLASS.LAST];
+            objectDetectionRuntimeParameters.objectClassTrackingParameters = objectClassTrackingParameters;
+
             sl.ERROR_CODE err = zedCamera.EnableObjectDetection(ref od_param);
             if (err == sl.ERROR_CODE.SUCCESS)
             {
@@ -3281,6 +3300,9 @@ public class ZEDManager : MonoBehaviour
         objectDetectionRuntimeParameters.objectClassFilter[(int)sl.OBJECT_CLASS.ELECTRONICS] = Convert.ToInt32(objectClassElectronicsFilter);
         objectDetectionRuntimeParameters.objectClassFilter[(int)sl.OBJECT_CLASS.FRUIT_VEGETABLE] = Convert.ToInt32(objectClassFruitVegetableFilter);
         objectDetectionRuntimeParameters.objectClassFilter[(int)sl.OBJECT_CLASS.SPORT] = Convert.ToInt32(objectClassSportFilter);
+        objectDetectionRuntimeParameters.objectClassTrackingParameters = new sl.ObjectTrackingParameters[(int)sl.OBJECT_CLASS.LAST];
+
+        objectDetectionRuntimeParameters.objectClassTrackingParameters = objectClassTrackingParameters;
 
         if (newobjectsframeready)
         {
@@ -3949,7 +3971,7 @@ public class ZEDManager : MonoBehaviour
     /// Sets the calibrationHasChanged flag to true, which causes the next Update() to
     /// re-apply the HMD-to-ZED offsets.
     /// </summary>
-	private void CalibrationHasChanged()
+    private void CalibrationHasChanged()
     {
         calibrationHasChanged = true;
     }
@@ -3971,7 +3993,7 @@ public class ZEDManager : MonoBehaviour
             {
                 //Enables tracking and initializes the first position of the camera.
                 if (!(enableTracking = (zedCamera.EnableTracking(ref zedOrientation, ref zedPosition, enableSpatialMemory, enablePoseSmoothing, setFloorAsOrigin, trackingIsStatic,
-                    enableIMUFusion, depthMinRange, setGravityAsOrigin, positionalTrackingMode, pathSpatialMemory) == sl.ERROR_CODE.SUCCESS)))
+                    enableIMUFusion, depthMinRange, setGravityAsOrigin, positionalTrackingMode, enableLocalizationOnly, enable2DGroundMode, pathSpatialMemory) == sl.ERROR_CODE.SUCCESS)))
                 {
                     isZEDTracked = false;
                     throw new Exception(ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.TRACKING_NOT_INITIALIZED));

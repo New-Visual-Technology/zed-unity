@@ -38,10 +38,10 @@ namespace sl
 
     public enum INPUT_TYPE
     {
-        INPUT_TYPE_USB,
-        INPUT_TYPE_SVO,
-        INPUT_TYPE_STREAM,
-        INPUT_TYPE_GMSL
+        USB,
+        SVO,
+        STREAM,
+        GMSL
     };
 
     /// <summary>
@@ -187,6 +187,12 @@ namespace sl
         /// </summary>
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 512)]
         public string path;
+
+        /// <summary>
+        ///  System path of the camera
+        /// </summary>
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 512)]
+        public string videoDevice;
         /// <summary>
         /// i2c port of the camera.
         /// </summary>
@@ -203,22 +209,29 @@ namespace sl
         /// </summary>
         public uint sn;
         /// <summary>
+        ///  GMSL port of the camera.
+        /// </summary>
+        int gmslPort;
+        /// <summary>
         /// [Cam model, eeprom version, white balance param]
         /// </summary>
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 3)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
         public byte[] identifiers;
         /// <summary>
         ///  badge name (zedx_ar0234)
         /// </summary>
-        public IntPtr camera_badge;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+        public string camera_badge;
         /// <summary>
         /// Name of sensor (zedx)
         /// </summary>
-        public IntPtr camera_sensor_model;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+        public string camera_sensor_model;
         /// <summary>
         /// Name of Camera in DT (ZED_CAM1)
         /// </summary>
-        public IntPtr camera_name;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+        public string camera_name;
         /// <summary>
         /// Input type of the camera.
         /// </summary>
@@ -256,6 +269,10 @@ namespace sl
         /// The current codec used for compression in streaming device
         /// </summary>
         public sl.STREAMING_CODEC codec;
+        /// <summary>
+        /// Model of the streaming device.
+        /// </summary>
+        public sl.MODEL cameraModel;
     };
 
     /// <summary>
@@ -785,30 +802,57 @@ namespace sl
         /// Key used to retrieve the data stored into SVOData's content.
         /// The key size must not exceed 128 characters.
         /// </summary>
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
-        public string key;
+        IntPtr key;
         /// <summary>
-        /// Timestamp of the data (in nanoseconds).
+        /// Size of the key string
         /// </summary>
-        public ulong timestamp;
+        int keySize;
         /// <summary>
         /// Content stored as SVOData
-        /// Allow any type of content, including raw data like compressed images or JSON.
+        /// Allow any type of content, including raw data like compressed images of json.
         /// </summary>
         IntPtr content;
         /// <summary>
         /// Size of the content data.
         /// </summary>
-        public int contentSize;
+        int contentSize;
+        /// <summary>
+        /// Timestamp of the data (in nanoseconds).
+        /// </summary>
+        public ulong timestamp;
 
         public string GetContent()
         {
-            return Marshal.PtrToStringAnsi(content);
+            string result = Marshal.PtrToStringAnsi(content);
+            ZEDCamera.dllz_free(content);
+            content = IntPtr.Zero;
+            return result;
         }
 
         public void SetContent(string c)
         {
             content = Marshal.StringToHGlobalAnsi(c);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public string GetKey()
+        {
+            string result = Marshal.PtrToStringAnsi(key);
+            ZEDCamera.dllz_free(key);
+            key = IntPtr.Zero;
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="k"></param>
+        public void SetKey(string k)
+        {
+            key = Marshal.StringToHGlobalAnsi(k);
         }
     }
 
@@ -907,6 +951,16 @@ namespace sl
     /// </remarks>
     public enum ERROR_CODE
     {
+        /// <summary>
+        /// The sensor's configuration (mode, multicast, etc.) was changed externally while streaming.
+        /// If auto_recovery_on_config_change is enabled, the SDK will automatically reconnect.
+        /// This warning code is returned once after successful recovery.
+        /// </summary>
+        SENSOR_CONFIGURATION_CHANGED = -6,
+        /// <summary>
+        /// The camera has a potential calibration issue.
+        /// </summary>
+        POTENTIAL_CALIBRATION_ISSUE = -5,
         /// <summary>
         /// The operation could not proceed with the target configuration but did success with a fallback.
         /// </summary>
@@ -1061,6 +1115,11 @@ namespace sl
         /// The module needs a newer version of CUDA.
         /// </summary>
         MODULE_NOT_COMPATIBLE_WITH_CUDA_VERSION,
+        /// <summary>
+        /// The drivers initialization has failed. When using gmsl cameras, try restarting with sudo systemctl
+        /// restart zed_x_daemon.service
+        /// </summary>
+        DRIVER_FAILURE,
         /// @cond SHOWHIDDEN 
         LAST
         /// @endcond
@@ -1180,71 +1239,215 @@ namespace sl
     public enum VIEW
     {
         /// <summary>
-        /// Left RGBA image. As a ZEDMat, MAT_TYPE is set to MAT_TYPE_8U_C4.
+        /// Left BGRA image. Each pixel contains 4 unsigned char (B, G, R, A).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C4.
         /// </summary>
         LEFT,
         /// <summary>
-        /// Right RGBA image. As a ZEDMat, MAT_TYPE is set to sl::MAT_TYPE_8U_C4.
+        ///  Right BGRA image. Each pixel contains 4 unsigned char (B, G, R, A).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C4.
         /// </summary>
         RIGHT,
         /// <summary>
-        /// Left GRAY image. As a ZEDMat, MAT_TYPE is set to sl::MAT_TYPE_8U_C1.
+        /// Left gray image. Each pixel contains 1 unsigned char.
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C1.
         /// </summary>
         LEFT_GREY,
         /// <summary>
-        /// Right GRAY image. As a ZEDMat, MAT_TYPE is set to sl::MAT_TYPE_8U_C1.
+        /// Right gray image. Each pixel contains 1 unsigned char.
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C1.
         /// </summary>
         RIGHT_GREY,
         /// <summary>
-        /// Left RGBA unrectified image. As a ZEDMat, MAT_TYPE is set to sl::MAT_TYPE_8U_C4.
+        /// Left BGRA unrectified image. Each pixel contains 4 unsigned char (B, G, R, A).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C4.
         /// </summary>
         LEFT_UNRECTIFIED,
         /// <summary>
-        /// Right RGBA unrectified image. As a ZEDMat, MAT_TYPE is set to sl::MAT_TYPE_8U_C4.
+        /// Right BGRA unrectified image. Each pixel contains 4 unsigned char (B, G, R, A).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C4.
         /// </summary>
         RIGHT_UNRECTIFIED,
         /// <summary>
-        /// Left GRAY unrectified image. As a ZEDMat, MAT_TYPE is set to sl::MAT_TYPE_8U_C1.
+        /// Left gray unrectified image. Each pixel contains 1 unsigned char.
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C1.
         /// </summary>
         LEFT_UNRECTIFIED_GREY,
         /// <summary>
-        /// Right GRAY unrectified image. As a ZEDMat, MAT_TYPE is set to sl::MAT_TYPE_8U_C1.
+        /// Right gray unrectified image. Each pixel contains 1 unsigned char.
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C1.
         /// </summary>
         RIGHT_UNRECTIFIED_GREY,
         /// <summary>
-        ///  Left and right image. Will be double the width to hold both. As a ZEDMat, MAT_TYPE is set to MAT_8U_C4.
+        /// Left and right image (the image width is therefore doubled). Each pixel contains 4 unsigned char (B, G, R, A).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C4.
         /// </summary>
         SIDE_BY_SIDE,
         /// <summary>
-        /// Normalized depth image. As a ZEDMat, MAT_TYPE is set to sl::MAT_TYPE_8U_C4.
-        /// <para>Use an Image texture for viewing only. For measurements, use a Measure type instead
-        /// (ZEDCamera.RetrieveMeasure()) to preserve accuracy. </para>
+        /// Color rendering of the depth. Each pixel contains 4 unsigned char (B, G, R, A).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C4.
+        /// \note Use \ref MEASURE "sl.MEASURE.DEPTH" with sl.Camera.RetrieveMeasure() to get depth values.
         /// </summary>
         DEPTH,
         /// <summary>
-        /// Normalized confidence image. As a ZEDMat, MAT_TYPE is set to MAT_8U_C4.
-        /// <para>Use an Image texture for viewing only. For measurements, use a Measure type instead
-        /// (ZEDCamera.RetrieveMeasure()) to preserve accuracy. </para>
+        /// Color rendering of the depth confidence. Each pixel contains 4 unsigned char (B, G, R, A).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C4.
+        /// \note Use \ref MEASURE "sl.MEASURE.CONFIDENCE" with sl.Camera.RetrieveMeasure() to get confidence values.
         /// </summary>
         CONFIDENCE,
         /// <summary>
-        /// Color rendering of the normals. As a ZEDMat, MAT_TYPE is set to MAT_8U_C4.
-        /// <para>Use an Image texture for viewing only. For measurements, use a Measure type instead
-        /// (ZEDCamera.RetrieveMeasure()) to preserve accuracy. </para>
+        /// Color rendering of the normals. Each pixel contains 4 unsigned char (B, G, R, A).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C4.
+        /// \note Use \ref MEASURE "sl.MEASURE.NORMALS" with sl.Camera.RetrieveMeasure() to get normal values.
         /// </summary>
         NORMALS,
         /// <summary>
-        /// Color rendering of the right depth mapped on right sensor. As a ZEDMat, MAT_TYPE is set to MAT_8U_C4.
-        /// <para>Use an Image texture for viewing only. For measurements, use a Measure type instead
-        /// (ZEDCamera.RetrieveMeasure()) to preserve accuracy. </para>
+        /// Color rendering of the right depth mapped on right sensor. Each pixel contains 4 unsigned char (B, G, R, A).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C4.
+        /// \note Use \ref MEASURE "sl.MEASURE.DEPTH_RIGHT" with sl.Camera.RetrieveMeasure() to get depth right values.
         /// </summary>
         DEPTH_RIGHT,
         /// <summary>
-        /// Color rendering of the normals mapped on right sensor. As a ZEDMat, MAT_TYPE is set to MAT_8U_C4.
-        /// <para>Use an Image texture for viewing only. For measurements, use a Measure type instead
-        /// (ZEDCamera.RetrieveMeasure()) to preserve accuracy. </para>
+        /// Color rendering of the normals mapped on right sensor. Each pixel contains 4 unsigned char (B, G, R, A).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C4.
+        /// \note Use \ref MEASURE "sl.MEASURE.NORMALS_RIGHT" with sl.Camera.RetrieveMeasure() to get normal right values.
         /// </summary>
-        NORMALS_RIGHT
+        NORMALS_RIGHT,
+        /// <summary>
+        /// Alias of LEFT
+        /// </summary>
+        LEFT_BGRA,
+        /// <summary>
+        /// Left image. Each pixel contains 3 unsigned char (B, G, R).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C3.
+        /// </summary>
+        LEFT_BGR,
+        /// <summary>
+        /// Alias of RIGHT
+        /// </summary>
+        RIGHT_BGRA,
+        /// <summary>
+        /// Right image. Each pixel contains 3 unsigned char (B, G, R).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C3.
+        /// </summary>
+        RIGHT_BGR,
+        /// <summary>
+        /// Alias of LEFT_UNRECTIFIED
+        /// </summary>
+        LEFT_UNRECTIFIED_BGRA,
+        /// <summary>
+        /// Left unrectified image. Each pixel contains 3 unsigned char (B, G, R).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C3.
+        /// </summary>
+        LEFT_UNRECTIFIED_BGR,
+        /// <summary>
+        /// Alias of RIGHT_UNRECTIFIED
+        /// </summary>
+        RIGHT_UNRECTIFIED_BGRA,
+        /// <summary>
+        /// Right unrectified image. Each pixel contains 3 unsigned char (B, G, R).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C3.
+        /// </summary>
+        RIGHT_UNRECTIFIED_BGR,
+        /// <summary>
+        /// Alias of SIDE_BY_SIDE
+        /// </summary>
+        SIDE_BY_SIDE_BGRA,
+        /// <summary>
+        /// Side by side image. Each pixel contains 3 unsigned char (B, G, R).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C3.
+        /// </summary>
+        SIDE_BY_SIDE_BGR,
+        /// <summary>
+        /// gray scale side by side image. Each pixel contains 1 unsigned char.
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C1.
+        /// </summary>
+        SIDE_BY_SIDE_GRAY,
+        /// <summary>
+        /// Unrectified side by side image. Each pixel contains 4 unsigned char (B, G, R, A).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C4.
+        /// </summary>
+        SIDE_BY_SIDE_UNRECTIFIED_BGRA,
+        /// <summary>
+        /// Unrectified side by side image. Each pixel contains 3 unsigned char (B, G, R).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C3.
+        /// </summary>
+        SIDE_BY_SIDE_UNRECTIFIED_BGR,
+        /// <summary>
+        /// Grayscale unrectified side by side image. Each pixel contains 1 unsigned char.
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C1.
+        /// </summary>
+        SIDE_BY_SIDE_UNRECTIFIED_GRAY,
+        /// <summary>
+        /// Alias of DEPTH
+        /// </summary>
+        DEPTH_BGRA,
+        /// <summary>
+        /// Depth image. Each pixel contains 3 unsigned char (B, G, R).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C3.
+        /// </summary>
+        DEPTH_BGR,
+        /// <summary>
+        /// Grayscale depth image. Each pixel contains 1 unsigned char.
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C1.
+        /// </summary>
+        DEPTH_GRAY,
+        /// <summary>
+        /// Alias of CONFIDENCE
+        /// </summary>
+        CONFIDENCE_BGRA,
+        /// <summary>
+        /// Confidence image. Each pixel contains 3 unsigned char (B, G, R).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C3.
+        /// </summary>
+        CONFIDENCE_BGR,
+        /// <summary>
+        /// Grayscale confidence image. Each pixel contains 1 unsigned char.
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C1.
+        /// </summary>
+        CONFIDENCE_GRAY,
+        /// <summary>
+        /// Alias of NORMALS
+        /// </summary>
+        NORMALS_BGRA,
+        /// <summary>
+        /// Normals image. Each pixel contains 3 unsigned char (B, G, R).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C3.
+        /// </summary>
+        NORMALS_BGR,
+        /// <summary>
+        /// Grayscale normals image. Each pixel contains 1 unsigned char.
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C1.
+        /// </summary>
+        NORMALS_GRAY,
+        /// <summary>
+        /// Alias of DEPTH_RIGHT
+        /// </summary>
+        DEPTH_RIGHT_BGRA,
+        /// <summary>
+        /// Depth right image. Each pixel contains 3 unsigned char (B, G, R).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C3.
+        /// </summary>
+        DEPTH_RIGHT_BGR,
+        /// <summary>
+        /// Grayscale depth right image. Each pixel contains 1 unsigned char.
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C1.
+        /// </summary>
+        DEPTH_RIGHT_GRAY,
+        /// <summary>
+        /// Alias of NORMALS_RIGHT
+        /// </summary>
+        NORMALS_RIGHT_BGRA,
+        /// <summary>
+        /// Normals right image. Each pixel contains 3 unsigned char (B, G, R).
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C3.
+        /// </summary>
+        NORMALS_RIGHT_BGR,
+        /// <summary>
+        /// Grayscale normals right image. Each pixel contains 1 unsigned char.
+        ///\n Type: sl.MAT_TYPE.MAT_8U_C1.
+        /// </summary>
+        NORMALS_RIGHT_GRAY
     };
 
     /// <summary>
@@ -1488,7 +1691,7 @@ namespace sl
         /// </summary>
         GEN_2,
         /// <summary>
-        /// Hybrid mode
+        /// Fast and accurate, in both exploratory mode and mapped environments.\Note Can be used even if depth_mode is set to \ref DEPTH_MODE::NONE.
         /// </summary>
         GEN_3
     }
@@ -1774,6 +1977,10 @@ namespace sl
         /// </summary>
         public string pathSVO = "";
         /// <summary>
+        /// gmsl port used to open a ZED camera connected through GMSL interface.
+        /// </summary>
+        public int gmslPort = 0;
+        /// <summary>
         /// In SVO playback, this mode simulates a live camera and consequently skipped frames if the computation framerate is too slow.
         /// </summary>
         public bool svoRealTimeMode;
@@ -1907,16 +2114,70 @@ namespace sl
         public Resolution maximumWorkingResolution;
 
         /// <summary>
+        ///  Set the input as the camera with specified id.
+        /// </summary>
+        /// <param name="cameraID"></param>
+        public void SetFromCameraID(int cameraID)
+        {
+            this.cameraDeviceID = cameraID;
+            this.pathSVO = "";
+            this.gmslPort = -1;
+            this.inputType = sl.INPUT_TYPE.USB;
+        }
+
+        /// <summary>
+        /// Set the input as the camera with specified serial number.
+        /// </summary>
+        /// <param name="serialNumber"></param>
+        public void SetFromSerialNumber(uint serialNumber)
+        {
+            this.serialNumber = serialNumber;
+            this.pathSVO = "";
+            this.gmslPort = -1;
+            this.inputType = sl.INPUT_TYPE.USB;
+        }
+
+        /// <summary>
+        ///  Set the input as the SVO specified with the filename.
+        /// </summary>
+        /// <param name="svoFilePath"></param>
+        public void SetFromSVOFile(string svoFilePath)
+        {
+            this.pathSVO = svoFilePath;
+            this.gmslPort = -1;
+            this.inputType = sl.INPUT_TYPE.SVO;
+        }
+
+        public void SetFromGMSLPort(int port)
+        {
+            this.gmslPort = port;
+            this.pathSVO = "";
+            this.inputType = sl.INPUT_TYPE.GMSL;
+            this.serialNumber = 0;
+        }
+
+        public void SetFromStream(string ipAddress, ushort port = 30000)
+        {
+            this.ipStream = ipAddress;
+            this.portStream = port;
+            this.pathSVO = "";
+            this.gmslPort = -1;
+            this.inputType = sl.INPUT_TYPE.STREAM;
+            this.serialNumber = 0;
+        }
+
+        /// <summary>
         /// Constructor. Sets default initialization parameters recommended for Unity.
         /// </summary>
         public InitParameters()
         {
-            this.inputType = sl.INPUT_TYPE.INPUT_TYPE_USB;
+            this.inputType = sl.INPUT_TYPE.USB;
             this.resolution = RESOLUTION.AUTO;
             this.cameraFPS = -1;
             this.cameraDeviceID = 0;
             this.serialNumber = 0;
             this.pathSVO = "";
+            this.gmslPort = -1;
             this.svoRealTimeMode = false;
             this.coordinateUnit = UNIT.METER;
             this.coordinateSystem = COORDINATE_SYSTEM.LEFT_HANDED_Y_UP;
@@ -2359,6 +2620,69 @@ namespace sl
         public bool allowReducedPrecisionInference;
     };
 
+    ///\ingroup Object_group
+    /// <summary>
+    /// Structure containing a set of parameters for the object tracking module.
+    /// </summary>
+    /// The default constructor sets all parameters to their default settings.
+    /// \note Parameters can be adjusted by the user.
+    [StructLayout(LayoutKind.Sequential)]
+    public struct ObjectTrackingParameters
+    {
+        /// <summary>
+        /// Preset defining the expected maximum acceleration of the tracked object.
+        /// </summary>
+        /// Determines how the ZED SDK interprets object acceleration, affecting tracking behavior and predictions.
+        public OBJECT_ACCELERATION_PRESET objectAccelerationPreset;
+
+        /// <summary>
+        /// Deprecated: Manually override the acceleration preset.
+        /// </summary>
+        /// \warning Preferred way is to use \ref velocitySmoothingFactor.
+        public float maxAllowedAcceleration;
+
+        /// <summary>
+        /// Control the smoothing of the velocity estimation. Manually override the acceleration preset.
+        /// </summary>
+        /// Values between 0.0 and 1.0.
+        /// - High value (closer to 1.0): Very smooth, but may lag behind rapid changes.
+        /// - Low value (closer to 0.0): Very responsive to velocity changes, but may be jittery.
+        /// - 0.5: ZED SDK base tuning. Balanced smoothing and responsiveness.
+        /// A negative value (e.g. -1) lets the ZED SDK interpret velocitySmoothingFactor.
+        /// Default: -1
+        public float velocitySmoothingFactor;
+
+        /// <summary>
+        /// Threshold to force an object's velocity to zero.
+        /// </summary>
+        /// If the calculated speed (m/s) is below this threshold, the object is considered static.
+        /// This helps eliminate drift on stationary objects.
+        /// A negative value (e.g. -1) lets the ZED SDK interpret minVelocityThreshold.
+        /// Default: -1
+        public float minVelocityThreshold;
+
+        /// <summary>
+        /// Duration to keep predicting a track's position after occlusion.
+        /// </summary>
+        /// When an object is no longer visible (occluded or out of frame),
+        /// the tracker will predict its position for this duration before deleting the track.
+        /// - Short (e.g., 0.2s): Prevents "ghost" objects but may break tracks during short occlusions.
+        /// - Long (e.g., 2.0s): Maintains ID during long occlusions but may report objects that are gone.
+        /// A negative value (e.g. -1) lets the ZED SDK interpret predictionTimeoutS.
+        /// Default: -1
+        public float predictionTimeoutS;
+
+        /// <summary>
+        /// Minimum confirmation time required to validate a track.
+        /// </summary>
+        /// The minimum duration (in seconds) an object must be continuously detected
+        /// before it is reported as a valid track. Helps filter out spurious false
+        /// positives that appear only briefly.
+        /// A negative value (e.g. -1) lets the ZED SDK interpret minConfirmationTimeS.
+        /// Default: -1
+        public float minConfirmationTimeS;
+    };
+
 
     [StructLayout(LayoutKind.Sequential)]
     public struct ObjectDetectionRuntimeParameters
@@ -2381,6 +2705,17 @@ namespace sl
         /// </summary>
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = (int)sl.OBJECT_CLASS.LAST)]
         public int[] objectConfidenceThreshold;
+        /// <summary>
+        /// Global tracking parameters.
+        /// </summary>
+        public ObjectTrackingParameters objectTrackingParameters;
+
+        /// <summary>
+        /// Array of tracking parameters for each class (can be empty for some classes).
+        /// </summary>
+        /// \note sl::ObjectDetectionRuntimeParameters.objectTrackingParameters will be taken as fallback/default value.
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = (int)sl.OBJECT_CLASS.LAST)]
+        public ObjectTrackingParameters[] objectClassTrackingParameters;
     };
 
     /// <summary>
@@ -2466,6 +2801,55 @@ namespace sl
         /// </summary>
         public float minBoxHeightNormalized = -1.0f;
 
+        /// <summary>
+        /// Maximum allowed 3D width.
+        /// Any prediction bigger than that will be either discarded (if object is tracked and in SEARCHING state) or clamped.
+        /// Default: -1 (no filtering)
+        /// </summary>
+        public float maxBoxWidthMeters = -1.0f;
+        /// <summary>
+        /// Minimum allowed 3D width.
+        /// Any prediction smaller than that will be either discarded (if object is tracked and in SEARCHING state) or clamped.
+        /// Default: -1 (no filtering)
+        /// </summary>
+        public float minBoxWidthMeters = -1.0f;
+        /// <summary>
+        /// Maximum allowed 3D height.
+        /// Any prediction bigger than that will be either discarded (if object is tracked and in SEARCHING state) or clamped.
+        /// Default: -1 (no filtering)
+        /// </summary>
+        public float maxBoxHeightMeters = -1.0f;
+        /// <summary>
+        /// Minimum allowed 3D height.
+        /// Any prediction smaller than that will be either discarded (if object is tracked and in SEARCHING state) or clamped.
+        /// Default: -1 (no filtering)
+        /// </summary>
+        public float minBoxHeightMeters = -1.0f;
+        /// <summary>
+        /// For increased accuracy, the native \ref sl::OBJECT_SUBCLASS mapping, if any.
+        ///  Native objects have refined internal parameters for better 3D projection and tracking accuracy.
+        /// If one of the custom objects can be mapped to one the native \ref sl::OBJECT_SUBCLASS, this can help to boost the tracking accuracy.
+        /// Default: no mapping
+        /// </summary>
+        public OBJECT_SUBCLASS nativeMappedClass = OBJECT_SUBCLASS.LAST;
+        /// <summary>
+        /// Preset defining the expected maximum acceleration of the tracked object.
+        /// Determines how the ZED SDK interprets object acceleration, affecting tracking behavior and predictions.
+        /// Default: OBJECT_ACCELERATION_PRESET.DEFAULT
+        /// </summary>
+        public OBJECT_ACCELERATION_PRESET objectAccelerationPreset = OBJECT_ACCELERATION_PRESET.DEFAULT;
+        /// <summary>
+        /// Manually override the acceleration preset.
+        /// If set, this value takes precedence over the selected preset, allowing for a custom maximum acceleration.
+        /// Unit is m/s^2.
+        /// Default: nan (no override)
+        /// </summary>
+        public float maxAllowedAcceleration = float.NaN;
+        /// <summary>
+        /// Object tracking parameters for this class.
+        /// </summary>
+        public ObjectTrackingParameters objectTrackingParameters;
+
         public CustomObjectDetectionProperties()
         {
             this.classID = -1;
@@ -2479,6 +2863,14 @@ namespace sl
             this.minBoxHeightNormalized = -1.0f;
             this.maxBoxWidthNormalized = -1.0f;
             this.minBoxWidthNormalized = -1.0f;
+            this.maxBoxHeightMeters = -1.0f;
+            this.minBoxHeightMeters = -1.0f;
+            this.maxBoxWidthMeters = -1.0f;
+            this.minBoxWidthMeters = -1.0f;
+            this.nativeMappedClass = OBJECT_SUBCLASS.LAST;
+            this.objectAccelerationPreset = OBJECT_ACCELERATION_PRESET.DEFAULT;
+            this.maxAllowedAcceleration = float.NaN;
+            this.objectTrackingParameters = new ObjectTrackingParameters();
         }
     };
 
@@ -2528,10 +2920,30 @@ namespace sl
         /// Only the upper body will be output (from hip)
         /// </summary>
         UPPER_BODY,
+    };
+
+    ///\ingroup Object_group
+    /// <summary>
+    /// Lists of supported presets for maximum acceleration allowed for a given tracked object.
+    /// </summary>
+    public enum OBJECT_ACCELERATION_PRESET
+    {
         /// <summary>
-        /// Hands only
+        /// The ZED SDK will automatically determine the appropriate maximum acceleration.
         /// </summary>
-       // HAND
+        DEFAULT,
+        /// <summary>
+        /// Suitable for objects with relatively low maximum acceleration (e.g., a person walking).
+        /// </summary>
+        LOW,
+        /// <summary>
+        /// Suitable for objects with moderate maximum acceleration (e.g., a person running).
+        /// </summary>
+        MEDIUM,
+        /// <summary>
+        /// Suitable for objects with high maximum acceleration (e.g., a car accelerating, a kicked sports ball).
+        /// </summary>
+        HIGH
     };
 
     /// <summary>
@@ -3011,7 +3423,11 @@ namespace sl
         CARROT = 21,
         PERSON_HEAD = 22,
         SPORTSBALL = 23,
-        LAST = 24
+        /// <summary>
+        /// sl.OBJECT_CLASS.VEHICLE
+        /// </summary>
+        MACHINERY = 24,
+        LAST = 25
     };
 
     /// <summary>

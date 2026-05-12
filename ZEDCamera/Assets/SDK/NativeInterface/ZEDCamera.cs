@@ -338,7 +338,7 @@ public static class NativeWrapper
         /// <summary>
         /// Current Plugin Version.
         /// </summary>
-        public static readonly System.Version PluginVersion = new System.Version(5, 0, 0);
+        public static readonly System.Version PluginVersion = new System.Version(5, 2, 0);
 
         /******** DLL members ***********/
         [DllImport(nameDll, EntryPoint = "GetRenderEventFunc")]
@@ -351,6 +351,8 @@ public static class NativeWrapper
         /*
           * Utils function.
           */
+        [DllImport(nameDll, EntryPoint = "sl_free")]
+        public static extern void dllz_free(IntPtr ptr);
 
         [DllImport(nameDll, EntryPoint = "sl_unload_all_instances")]
         private static extern void dllz_unload_all_instances();
@@ -376,8 +378,8 @@ public static class NativeWrapper
         * Some initparameters are passed as arguments to facilitate Marshalling.
         */
         [DllImport(nameDll, EntryPoint = "sl_open_camera")]
-        private static extern int dllz_open(int cameraID, ref dll_initParameters parameters, uint serialNumber, System.Text.StringBuilder svoPath, System.Text.StringBuilder ipStream, int portStream, System.Text.StringBuilder output, System.Text.StringBuilder opt_settings_path, System.Text.StringBuilder opencv_calib_path);
-
+        private static extern int dllz_open(int cameraID, ref dll_initParameters parameters, uint serialNumber, System.Text.StringBuilder svoPath, System.Text.StringBuilder ipStream,
+            int portStream, int gmslPort, System.Text.StringBuilder output, System.Text.StringBuilder opt_settings_path, System.Text.StringBuilder opencv_calib_path);
         /*
          * Close function.
          */
@@ -576,8 +578,7 @@ public static class NativeWrapper
 
         /*
          * Depth Sensing utils functions.
-         */
-        /* Removed as of ZED SDK v3.0.
+         * Removed as of ZED SDK v3.0.
        [DllImport(nameDll, EntryPoint = "set_confidence_threshold")]
        private static extern void dllz_set_confidence_threshold(int cameraID, int threshold);
        [DllImport(nameDll, EntryPoint = "set_depth_max_range_value")]
@@ -615,7 +616,7 @@ public static class NativeWrapper
         [DllImport(nameDll, EntryPoint = "sl_enable_positional_tracking_unity")]
         private static extern int dllz_enable_tracking(int cameraID, ref Quaternion quat, ref Vector3 vec, bool enableSpatialMemory = false, bool enablePoseSmoothing = false, bool enableFloorAlignment = false,
             bool trackingIsStatic = false, bool enableIMUFusion = true, float depthMinRange = -1.0f, bool setGravityAsOrigin = true, sl.POSITIONAL_TRACKING_MODE mode = sl.POSITIONAL_TRACKING_MODE.GEN_1,
-            System.Text.StringBuilder aeraFilePath = null);
+            bool enableLocalizationOnly = false, bool enable2DGroundMode = false, System.Text.StringBuilder aeraFilePath = null);
 
         [DllImport(nameDll, EntryPoint = "sl_disable_positional_tracking")]
         private static extern void dllz_disable_tracking(int cameraID, System.Text.StringBuilder path);
@@ -1032,11 +1033,22 @@ public static class NativeWrapper
             string infoSystem = SystemInfo.graphicsDeviceType.ToString().ToUpper();
             if (!infoSystem.Equals("DIRECT3D11") && !infoSystem.Equals("OPENGLCORE") && !infoSystem.Equals("VULKAN"))
             {
-                throw new Exception("The graphic library [" + infoSystem + "] is not supported");
+                Debug.LogError("The graphic library [" + infoSystem + "] is not supported");
+#if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+#else
+                Application.Quit(1);
+#endif
+                return false;
             }
             CameraID = cameraID;
             //tagOneObject += cameraID;
             return dllz_create_camera(cameraID);
+        }
+        public void Close()
+        {
+            cameraReady = false;
+            dllz_close(CameraID);
         }
 
         /// <summary>
@@ -1045,14 +1057,9 @@ public static class NativeWrapper
         /// </summary>
         public void Destroy()
         {
-            cameraReady = false;
-            dllz_close(CameraID);
-            DestroyAllTexture();
-        }
-        public void Close()
-        {
-            dllz_close(CameraID);
+            Close();
             dllz_unload_instance(CameraID);
+            DestroyAllTexture();
         }
 
         /// <summary>
@@ -1231,6 +1238,7 @@ public static class NativeWrapper
                 new System.Text.StringBuilder(initParameters.pathSVO, initParameters.pathSVO.Length),
                 new System.Text.StringBuilder(initParameters.ipStream, initParameters.ipStream.Length),
                 initParameters.portStream,
+                initParameters.gmslPort,
                 new System.Text.StringBuilder(initParameters.sdkVerboseLogFile, initParameters.sdkVerboseLogFile.Length),
                 new System.Text.StringBuilder(initParameters.optionalSettingsPath, initParameters.optionalSettingsPath.Length),
                 new System.Text.StringBuilder(initParameters.optionalOpencvCalibrationFile, initParameters.optionalOpencvCalibrationFile.Length));
@@ -1538,11 +1546,12 @@ public static class NativeWrapper
         /// <param name="areaFilePath"> (optional) file of spatial memory file that has to be loaded to relocate in the scene.</param>
         /// <returns></returns>
         public sl.ERROR_CODE EnableTracking(ref Quaternion quat, ref Vector3 vec, bool enableSpatialMemory = true, bool enablePoseSmoothing = false, bool enableFloorAlignment = false, bool trackingIsStatic = false,
-            bool enableIMUFusion = true, float depthMinRange = -1.0f, bool setGravityAsOrigin = true, sl.POSITIONAL_TRACKING_MODE mode = POSITIONAL_TRACKING_MODE.GEN_1, string areaFilePath = "")
+            bool enableIMUFusion = true, float depthMinRange = -1.0f, bool setGravityAsOrigin = true, sl.POSITIONAL_TRACKING_MODE mode = POSITIONAL_TRACKING_MODE.GEN_1,
+            bool enableLocalizationOnly = false, bool enable2DGroundMode = false, string areaFilePath = "")
         {
             sl.ERROR_CODE trackingStatus = sl.ERROR_CODE.CAMERA_NOT_DETECTED;
             trackingStatus = (sl.ERROR_CODE)dllz_enable_tracking(CameraID, ref quat, ref vec, enableSpatialMemory, enablePoseSmoothing, enableFloorAlignment,
-                trackingIsStatic, enableIMUFusion, depthMinRange, setGravityAsOrigin, mode, new System.Text.StringBuilder(areaFilePath, areaFilePath.Length));
+                trackingIsStatic, enableIMUFusion, depthMinRange, setGravityAsOrigin, mode, enableLocalizationOnly, enable2DGroundMode, new System.Text.StringBuilder(areaFilePath, areaFilePath.Length));
             return trackingStatus;
         }
 
@@ -2295,15 +2304,8 @@ public static class NativeWrapper
             AssertCameraIsReady();
             //cameraSettingsManager.ResetCameraSettings(this);
 
-            SetCameraSettings(sl.CAMERA_SETTINGS.BRIGHTNESS, sl.ZEDCamera.brightnessDefault);
-            SetCameraSettings(sl.CAMERA_SETTINGS.CONTRAST, sl.ZEDCamera.contrastDefault);
-            SetCameraSettings(sl.CAMERA_SETTINGS.HUE, sl.ZEDCamera.hueDefault);
-            SetCameraSettings(sl.CAMERA_SETTINGS.SATURATION, sl.ZEDCamera.saturationDefault);
-            SetCameraSettings(sl.CAMERA_SETTINGS.SHARPNESS, sl.ZEDCamera.sharpnessDefault);
-            SetCameraSettings(sl.CAMERA_SETTINGS.GAMMA, sl.ZEDCamera.gammaDefault);
-            SetCameraSettings(sl.CAMERA_SETTINGS.AUTO_WHITEBALANCE, 1);
-            SetCameraSettings(sl.CAMERA_SETTINGS.AEC_AGC, 1);
-            SetCameraSettings(sl.CAMERA_SETTINGS.LED_STATUS, 1);
+            foreach (sl.CAMERA_SETTINGS setting_ in Enum.GetValues(typeof(sl.CAMERA_SETTINGS)))
+                SetCameraSettings(setting_, -1);
         }
 
         /// <summary>

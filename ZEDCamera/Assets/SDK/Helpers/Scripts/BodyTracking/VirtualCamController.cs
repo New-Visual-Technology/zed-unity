@@ -14,10 +14,12 @@ public class VirtualCamController : MonoBehaviour
 
     private Quaternion currentRotation = Quaternion.identity;
     private Vector3 currentPosition = Vector3.zero;
-    private float stepTranslation = 0.1f;
-    private float stepRotation = 5f;
 
     private bool initialized = false;
+
+#if ENABLE_LEGACY_INPUT_MANAGER
+    private float stepTranslation = 0.1f;
+    private float stepRotation = 5f;
 
     [SerializeField]
     private KeyCode toLeft = KeyCode.Keypad4;
@@ -37,6 +39,7 @@ public class VirtualCamController : MonoBehaviour
     private KeyCode rolldown = KeyCode.Keypad3;
     [SerializeField]
     private KeyCode toggleFollow = KeyCode.Keypad5;
+#endif
 
     // Start is called before the first frame update
     void Start()
@@ -70,6 +73,7 @@ public class VirtualCamController : MonoBehaviour
 
     void ManageInput()
     {
+#if ENABLE_LEGACY_INPUT_MANAGER
         if(enableControls)
         {
             if (Input.GetKeyDown(toLeft)) { currentPosition += new Vector3(-stepTranslation, 0, 0); }
@@ -81,17 +85,19 @@ public class VirtualCamController : MonoBehaviour
             if (Input.GetKeyDown(rolldown)) { currentRotation *= Quaternion.Euler(Vector3.right * stepRotation); }
             if (Input.GetKeyDown(rollup)) { currentRotation *= Quaternion.Euler(Vector3.right * -stepRotation); }
         }
+#endif
     }
 
     // Update is called once per frame
     void Update()
     {
+#if ENABLE_LEGACY_INPUT_MANAGER
         if (Input.GetKeyDown(toggleFollow))
         {
             if (!initialized) { ResetCurrentCam(); }
             followRealCam = !followRealCam;
         }
-
+#endif
         if(followRealCam)
         {
             transform.SetPositionAndRotation(zedManager.transform.localPosition, zedManager.transform.localRotation);
