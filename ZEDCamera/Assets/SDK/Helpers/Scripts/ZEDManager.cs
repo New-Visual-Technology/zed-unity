@@ -2587,7 +2587,11 @@ public class ZEDManager : MonoBehaviour
     {
 
         runtimeParameters = new sl.RuntimeParameters();
+#if !ZED_NVT_FVW
         runtimeParameters.enableDepth = true;
+#else
+        runtimeParameters.enableDepth = false;
+#endif
         runtimeParameters.confidenceThreshold = confidenceThreshold;
         runtimeParameters.textureConfidenceThreshold = textureConfidenceThreshold;
         runtimeParameters.removeSaturatedAreas = true;
@@ -2843,8 +2847,10 @@ public class ZEDManager : MonoBehaviour
             {
                 zedCamera.RetrieveTextures(); //Tell the wrapper to compute the textures.
                 zedCamera.UpdateTextures(); //Tell the wrapper to update the textures.
+#if !ZED_NVT_FVW
                 imageTimeStamp = zedCamera.GetImagesTimeStamp();
                 svoPosition = zedCamera.GetSVOPosition();
+#endif
             }
 
             //For external module ... Trigger the capture done event.
@@ -2968,11 +2974,13 @@ public class ZEDManager : MonoBehaviour
         // Then update all modules
         UpdateImages(); //Image is updated first so we have its timestamp for latency compensation.
 
+#if !ZED_NVT_FVW
         UpdateHmdPose(); //Store the HMD's pose at the current timestamp.
         UpdateTracking(); //Apply position/rotation changes to zedRigRoot.
         UpdateObjectDetection(); //Update od if activated
         UpdateBodiesTracking(); // Update bt if actived
         UpdateMapping(); //Update mapping if activated
+#endif
 
         /// If in Unity Editor, update the ZEDManager status list
 #if UNITY_EDITOR
@@ -4085,6 +4093,11 @@ public class ZEDManager : MonoBehaviour
                 Debug.LogWarning("Unspecified Resolution, this should never happen");
                 break;
         }
+
+        // Wait for camera to be ready before applying the new settings.
+        // This avoids a crash when the camera isn't ready yet and reset is called.
+        while (!zedCamera.IsCameraReady)
+        { }
 
         Reset();
     }
