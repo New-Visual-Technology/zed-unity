@@ -1,14 +1,12 @@
 ﻿#if ZED_OPENCV_FOR_UNITY
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using OpenCVForUnity.CoreModule;
-using OpenCVForUnity.ArucoModule;
-using OpenCVForUnity.UnityUtils;
 using OpenCVForUnity.Calib3dModule;
+using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.ObjdetectModule;
+using OpenCVForUnity.UnityUtils;
+using UnityEngine;
 
 [Serializable]
 public struct BoardDef

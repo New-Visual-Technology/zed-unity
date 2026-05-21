@@ -1,10 +1,7 @@
 ﻿#if ZED_OPENCV_FOR_UNITY
 
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using OpenCVForUnity.CoreModule;
-using OpenCVForUnity.ArucoModule;
 
 /// <summary>
 /// Base class for objects that should do something when a specific marker is detected by ZEDArUcoDetectionManager.

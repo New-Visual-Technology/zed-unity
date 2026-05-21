@@ -1,13 +1,11 @@
 ﻿#if ZED_OPENCV_FOR_UNITY
 
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.ArucoModule;
-using OpenCVForUnity.UnityUtils;
 using OpenCVForUnity.Calib3dModule;
+using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.ObjdetectModule;
+using UnityEngine;
 
 /// <summary>
 /// Whenever the ZED grabs/captures an image, uses OpenCV to detect ArUCO markers, calculates their
