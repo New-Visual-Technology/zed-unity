@@ -738,7 +738,7 @@ public class ZEDRenderingPlane : MonoBehaviour
 
         if (mask == null || !mask.IsCreated())
         {
-            mask = new RenderTexture(Screen.width, Screen.height, 0, RenderTextureFormat.R8);
+            mask = new RenderTexture(Screen.width, Screen.height, 0, RenderTextureFormat.RHalf);
         }
 
         //Set up the post-processing material.
@@ -842,7 +842,7 @@ public class ZEDRenderingPlane : MonoBehaviour
 
         if (mask == null || !mask.IsCreated())
         {
-            mask = new RenderTexture(Screen.width, Screen.height, 0, RenderTextureFormat.R8);
+            mask = new RenderTexture(Screen.width, Screen.height, 0, RenderTextureFormat.RHalf);
         }
         //Set the post process buffer
         postProcessBuffer[(int)ZED_RENDERING_MODE.DEFERRED] = new CommandBuffer();
@@ -1449,14 +1449,16 @@ public class ZEDRenderingPlane : MonoBehaviour
                     Graphics.Blit(buffer, mask, matComposeMask);
 
                     ApplyPostProcess(source, destination, bluredMask);
-
+                    
                     RenderTexture.ReleaseTemporary(buffer);
                     RenderTexture.ReleaseTemporary(bluredMask);
                 }
                 else //Forward path.
                 {
                     RenderTexture bluredMask = RenderTexture.GetTemporary(mask.width, mask.height, mask.depth, mask.format);
+
                     ApplyPostProcess(source, destination, bluredMask);
+
                     RenderTexture.ReleaseTemporary(bluredMask);
                 }
             }
@@ -1475,7 +1477,7 @@ public class ZEDRenderingPlane : MonoBehaviour
     /// <param name="bluredMask">Mask used to apply blurring effects.</param>
     private void ApplyPostProcess(RenderTexture source, RenderTexture destination, RenderTexture bluredMask)
     {
-        RenderTexture tempDestination = RenderTexture.GetTemporary(source.width, source.height, source.depth, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
+        RenderTexture tempDestination = RenderTexture.GetTemporary(source.width, source.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
 
         Graphics.Blit(source, tempDestination, postprocessMaterial);
         ZEDPostProcessingTools.Blur(mask, bluredMask, blurMaterial, 3, 1, 1);

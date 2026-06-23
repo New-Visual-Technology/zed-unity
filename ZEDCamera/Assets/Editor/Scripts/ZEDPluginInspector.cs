@@ -110,11 +110,7 @@ public class ZEDPluginInspector : EditorWindow
 
     static void UpdateLog()
     {
-        if (!sl.ZEDCamera.CheckPlugin())
-        {
-            Debug.Log("ZED SDK is not installed or needs to be updated");
-        }
-
+        sl.ZEDCamera.CheckPlugin();
         EditorApplication.update -= UpdateLog;
     }
 
@@ -158,7 +154,10 @@ public class ZEDPluginInspector : EditorWindow
 
         if (!sl.ZEDCamera.CheckPlugin())
         {
-            errorMessage = ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.SDK_DEPENDENCIES_ISSUE);
+            if (sl.ZEDSDKVersionValidator.ValidationComplete && !sl.ZEDSDKVersionValidator.IsSDKCompatible)
+                errorMessage = ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.SDK_VERSION_MISMATCH);
+            else
+                errorMessage = ZEDLogMessage.Error2Str(ZEDLogMessage.ERROR.SDK_DEPENDENCIES_ISSUE);
             showErrorMode = true;
             window = GetWindow<ZEDPluginInspector>(true);
             window.maxSize = new Vector2(400, 600);
