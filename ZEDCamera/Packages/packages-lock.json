@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "com.unity.ai.navigation": {
-      "version": "2.0.12",
+      "version": "2.0.13",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -187,7 +187,7 @@
       }
     },
     "com.unity.test-framework.performance": {
-      "version": "3.4.0",
+      "version": "3.5.0",
       "depth": 2,
       "source": "registry",
       "dependencies": {
@@ -227,11 +227,11 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.xr.interaction.toolkit": {
-      "version": "3.3.1",
+      "version": "3.3.2",
       "depth": 0,
       "source": "registry",
       "dependencies": {
-        "com.unity.ugui": "1.0.0",
+        "com.unity.ugui": "2.0.0",
         "com.unity.modules.xr": "1.0.0",
         "com.unity.inputsystem": "1.8.1",
         "com.unity.mathematics": "1.2.6",

@@ -7,7 +7,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Threading;
 using UnityEngine;
-using static log4net.Appender.ColoredConsoleAppender;
+//using static log4net.Appender.ColoredConsoleAppender;
 
 /// <summary>
 /// Processes the mesh taken from the ZED's Spatial Mapping feature so it can be used within Unity.

@@ -18,12 +18,16 @@ public class ZEDDefineHandler : AssetPostprocessor
 
     static ZEDDefineHandler()
     {
+#if !ZED_NVT_FVW
         UpdateDefines();
+#endif
     }
 
     static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
     {
+#if !ZED_NVT_FVW
         UpdateDefines();
+#endif
     }
 
     static void UpdateDefines()
