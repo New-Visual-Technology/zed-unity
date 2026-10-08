@@ -115,7 +115,7 @@ public class CameraBrightnessManager : MonoBehaviour
             zedmat.Create(new sl.Resolution(cameraManager.zedCamera.ImageWidth, cameraManager.zedCamera.ImageHeight), mattype);
         }
 
-        ERROR_CODE err = cameraManager.zedCamera.RetrieveImage(zedmat, view, ZEDMat.MEM.MEM_CPU, zedmat.GetResolution());
+        ERROR_CODE err = cameraManager.zedCamera.RetrieveImage(zedmat, view, ZEDMat.MEM.CPU, zedmat.GetResolution());
 
         if (err == ERROR_CODE.SUCCESS)
         {
@@ -133,7 +133,7 @@ public class CameraBrightnessManager : MonoBehaviour
             {
                 y = i / width;
                 x = y == 0 ? i : i % (y * width);
-                zedmat.GetValue(x, y, out byte val, ZEDMat.MEM.MEM_CPU);
+                zedmat.GetValue(x, y, out byte val, ZEDMat.MEM.CPU);
                 intensity += val;
             }
 

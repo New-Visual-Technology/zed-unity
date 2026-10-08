@@ -1,9 +1,8 @@
 //======= Copyright (c) Stereolabs Corporation, All rights reserved. ===============
 
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.XR;
+using sl;
 
 /// <summary>
 /// Controls the message displayed as the zed is initialized, and if it becomes disconnected. 
