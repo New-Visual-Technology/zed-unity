@@ -25,7 +25,7 @@ public class LookAtHeadCenter : MonoBehaviour
     {
         if (!ZedManager)
         {
-            ZedManager = FindObjectOfType<ZEDManager>();
+            ZedManager = FindFirstObjectByType<ZEDManager>();
         }
 
         if (ZedManager)

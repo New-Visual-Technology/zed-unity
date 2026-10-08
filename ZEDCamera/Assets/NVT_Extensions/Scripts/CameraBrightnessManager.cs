@@ -60,7 +60,7 @@ public class CameraBrightnessManager : MonoBehaviour
         cameraManager = gameObject.GetComponentInParent<ZEDManager>();
         if (!cameraManager)
         {
-            cameraManager = FindObjectOfType<ZEDManager>();
+            cameraManager = FindFirstObjectByType<ZEDManager>();
         }
 
         cameraManager.OnZEDReady += ZEDReady;

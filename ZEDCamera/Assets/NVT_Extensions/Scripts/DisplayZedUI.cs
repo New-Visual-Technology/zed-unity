@@ -40,7 +40,7 @@ namespace FVW.InteractionSystem
 
         protected void Start()
         {
-            ZEDManager zedManager = FindObjectOfType<ZEDManager>(true);
+            ZEDManager zedManager = FindFirstObjectByType<ZEDManager>(FindObjectsInactive.Include);
 
             if (zedManager == null)
             {

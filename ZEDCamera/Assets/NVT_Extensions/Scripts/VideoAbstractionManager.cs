@@ -166,7 +166,7 @@ public class VideoAbstractionManager : MonoBehaviour
         cameraManager = gameObject.GetComponentInParent<ZEDManager>();
         if (!cameraManager)
         {
-            cameraManager = FindObjectOfType<ZEDManager>();
+            cameraManager = FindFirstObjectByType<ZEDManager>();
         }
 
         screenManager = GetComponent<ZEDRenderingPlane>();

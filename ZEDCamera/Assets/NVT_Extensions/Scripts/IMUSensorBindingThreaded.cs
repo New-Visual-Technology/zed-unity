@@ -35,9 +35,9 @@ public class IMUSensorBindingThreaded : MonoBehaviour
     {
         if (!zedManager)
         {
-            if (FindObjectOfType<ZEDManager>())
+            if (FindFirstObjectByType<ZEDManager>())
             {
-                zedManager = FindObjectOfType<ZEDManager>();
+                zedManager = FindFirstObjectByType<ZEDManager>();
             }
 
             return;
