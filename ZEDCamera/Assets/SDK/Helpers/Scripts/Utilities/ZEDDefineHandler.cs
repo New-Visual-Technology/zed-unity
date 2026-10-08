@@ -6,6 +6,8 @@ using UnityEditor;
 using UnityEditor.Build;
 using UnityEngine;
 
+namespace sl
+{
 /// <summary>
 /// Manages compiler defines for optional ZED plugin dependencies (e.g. OpenCV for Unity).
 /// Runs on domain reload and after asset changes to keep defines in sync.
@@ -83,6 +85,7 @@ public class ZEDDefineHandler : AssetPostprocessor
         var buildTargetGroup = BuildPipeline.GetBuildTargetGroup(target);
         PlayerSettings.SetScriptingDefineSymbols(NamedBuildTarget.FromBuildTargetGroup(buildTargetGroup), string.Join(";", definesList));
     }
+}
 }
 
 #endif

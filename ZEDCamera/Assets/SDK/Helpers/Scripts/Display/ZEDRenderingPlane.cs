@@ -1,4 +1,6 @@
-﻿//======= Copyright (c) Stereolabs Corporation, All rights reserved. ===============
+﻿namespace sl
+{
+//======= Copyright (c) Stereolabs Corporation, All rights reserved. ===============
 
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -1600,7 +1602,7 @@ public class ZEDRenderingPlane : MonoBehaviour
 
             if (scaleheight < 1.0f) //Height is too large. Shrink it, adding letterboxes to the top and bottom.
             {
-                Rect rect = cam.rect;
+                UnityEngine.Rect rect = cam.rect;
 
                 rect.width = 1.0f;
                 rect.height = scaleheight;
@@ -1613,7 +1615,7 @@ public class ZEDRenderingPlane : MonoBehaviour
             {
                 float scalewidth = 1.0f / scaleheight;
 
-                Rect rect = cam.rect;
+                UnityEngine.Rect rect = cam.rect;
 
                 rect.width = scalewidth;
                 rect.height = 1.0f;
@@ -1638,4 +1640,5 @@ public class ZEDRenderingPlane : MonoBehaviour
 
     }
 
+}
 }

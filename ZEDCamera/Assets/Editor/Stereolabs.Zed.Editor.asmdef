@@ -1,6 +1,6 @@
 {
     "name": "Stereolabs.Zed.Editor",
-    "rootNamespace": "",
+    "rootNamespace": "sl",
     "references": [
         "Stereolabs.Zed",
         "NVT.EventSystem"

@@ -1,6 +1,6 @@
 {
     "name": "Stereolabs.Zed",
-    "rootNamespace": "",
+    "rootNamespace": "sl",
     "references": [
         "Unity.RenderPipelines.Universal.Runtime",
         "Unity.XR.Management",

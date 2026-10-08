@@ -1,3 +1,5 @@
+namespace sl
+{
 //======= Copyright (c) Stereolabs Corporation, All rights reserved. ===============
 
 using UnityEngine;
@@ -88,4 +90,5 @@ public class ZEDMirror : MonoBehaviour
         RenderPipelineManager.endFrameRendering -= OnFrameEnd;
 #endif
     }
+}
 }
