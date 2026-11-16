@@ -220,7 +220,7 @@ public class ZEDToOpenCVRetriever : MonoBehaviour
         }
 
 
-        ERROR_CODE err = zedManager.zedCamera.RetrieveImage(zedmat, view, ZEDMat.MEM.MEM_CPU, zedmat.GetResolution());
+        ERROR_CODE err = zedManager.zedCamera.RetrieveImage(zedmat, view, ZEDMat.MEM.CPU, zedmat.GetResolution());
         
         if (err == ERROR_CODE.SUCCESS)
         {

@@ -2,6 +2,7 @@ using UnityEngine;
 using sl;
 
 #if ZED_NVT_FVW
+using System;
 using NVT.EventSystem;
 using FVW.Events;
 using FVW.JsonSerializables.UserSettingsDataObject;
